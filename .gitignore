@@ -1,0 +1,18 @@
+# Compiled Java Bytecode
+*.class
+*.jar
+*.war
+*.ear
+
+# IDE and Editor Files
+.vscode/
+.idea/
+*.iml
+
+# Personal Local Storage Data
+expenses.csv
+*.log
+
+# OS Generated Files
+.DS_Store
+thumbs.db
