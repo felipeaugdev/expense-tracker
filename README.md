@@ -6,14 +6,14 @@ A modular, architecture-focused Java command-line application for tracking perso
 
 ## 🏛️ Key Architectural Highlights
 
-* **Loose Coupling via Interfaces:** Business logic interacts solely with an `ExpenseRepository` abstraction. Storage backends can be swapped seamlessly without modifying core domain logic.
+* **Loose Coupling via Interfaces:** Business logic interacts solely with an `ExpenseRepository` abstraction. Storage back-ends can be swapped seamlessly without modifying core domain logic.
 * **Dependency Injection (DI):** Hand-rolled constructor injection decoupling `ExpenseManager` from concrete storage instantiation.
 * **Pluggable Storage Implementations:**
   * `DatabaseExpenseRepository`: SQL persistence via MariaDB and JDBC.
   * `CsvExpenseRepository`: File-based storage reading and writing with standard CSV format.
   * `InMemoryExpenseRepository`: Zero-disk-access RAM storage designed for high-speed unit testing.
 * **Granular SQL Operations:** Utilizes MariaDB `UPSERT` (`ON DUPLICATE KEY UPDATE`) and targeted `DELETE` operations for $O(1)$ updates instead of full table overwrites.
-* **SQL Injection Prevention:** All SQL persistence uses paramterized `PreparedStatement` queries.
+* **SQL Injection Prevention:** All SQL persistence uses parametrized `PreparedStatement` queries.
 * **Environment Variable Credentials:** Security sensitive parameters (like database credentials) are externalized via environment variables.
 
 ---
