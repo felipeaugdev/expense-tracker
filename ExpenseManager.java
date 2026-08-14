@@ -1,6 +1,8 @@
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.List;
+import java.util.Map;
+import java.util.TreeMap;
 
 public class ExpenseManager {
 
@@ -10,11 +12,11 @@ public class ExpenseManager {
 
     // Dependency Injection: The repository is passed into the constructor from outside
     public ExpenseManager(ExpenseRepository repository) {
-        // 1. Load repository and existing expenses on app startup
+        // Load repository and existing expenses on app startup
         this.repository = repository;
         this.expenses = repository.loadExpenses();
 
-        // 2. Determine the correct nextId based on existing data
+        // Determine the correct nextId
         this.nextId = calculateNextId();
     }
 
@@ -58,6 +60,25 @@ public class ExpenseManager {
             }
         }
         return maxId + 1;
+    }
+
+    /**
+     * Group total expenses by category
+     * 
+     * @return Map where the key is the category name and the value is the total amount.
+     */
+    public Map<String, BigDecimal> getTotalExpensesByCategory() {
+        Map<String, BigDecimal> categoryTotals = new TreeMap<>();
+
+        for (Expense expense : expenses) {
+            String category = expense.getCategory();
+            BigDecimal amount = expense.getAmount();
+
+            BigDecimal currentTotal = categoryTotals.getOrDefault(category, BigDecimal.ZERO);
+            categoryTotals.put(category, currentTotal.add(amount));
+        }
+
+        return categoryTotals;
     }
 
 }
