@@ -2,6 +2,7 @@ import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.util.List;
 import java.util.Scanner;
+import java.util.Map;
 
 public class Main {
     public static void main(String[] args) {
@@ -135,8 +136,23 @@ public class Main {
     }
 
     private static void handleViewTotal(ExpenseManager manager) {
-        BigDecimal total = manager.getTotalExpenses();
-        System.out.println("Total Expenses: $" + total);
+        Map<String, BigDecimal> categoryTotals = manager.getTotalExpensesByCategory();
+
+        if (categoryTotals.isEmpty()) {
+            System.out.println("\nNo expenses recorded yet.");
+            return;
+        }
+
+        System.out.println("\n--- EXPENSES BY CATEGORY ---");
+        BigDecimal grandTotal = BigDecimal.ZERO;
+
+        for (Map.Entry<String, BigDecimal> entry : categoryTotals.entrySet()) {
+            System.out.printf("%-20s : $%s%n", entry.getKey(), entry.getValue());
+            grandTotal = grandTotal.add(entry.getValue());
+        }
+
+        System.out.println("----------------------------");
+        System.out.printf("%-20s : $%s%n", "GRAND TOTAL", grandTotal);
     }
 
     private static String selectCategory(Scanner scanner) {
