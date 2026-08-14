@@ -13,7 +13,7 @@ A modular, architecture-focused Java command-line application for tracking perso
   * `CsvExpenseRepository`: File-based storage reading and writing with standard CSV format.
   * `InMemoryExpenseRepository`: Zero-disk-access RAM storage designed for high-speed unit testing.
 * **Granular SQL Operations:** Utilizes MariaDB `UPSERT` (`ON DUPLICATE KEY UPDATE`) and targeted `DELETE` operations for $O(1)$ updates instead of full table overwrites.
-* **SQL Injection Prevention:** All SQL persistence uses parametrized `PreparedStatement` queries.
+* **SQL Injection Prevention:** All SQL persistence uses parameterized `PreparedStatement` queries.
 * **Environment Variable Credentials:** Security sensitive parameters (like database credentials) are externalized via environment variables.
 
 ---

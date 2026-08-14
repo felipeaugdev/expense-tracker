@@ -73,7 +73,7 @@ public class Main {
 
     private static BigDecimal readBigDecimal(Scanner scanner, String prompt) {
         while (true) {
-            System.out.println(prompt);
+            System.out.print(prompt);
             String input = scanner.nextLine();
 
             try {
@@ -95,13 +95,12 @@ public class Main {
     // --- HELPER METHODS ---
 
     private static void handleAddExpense(Scanner scanner, ExpenseManager manager) {
-        BigDecimal amount = readBigDecimal(scanner, "Enter amount (e.g. 12.50): ");
+        BigDecimal amount = readBigDecimal(scanner, "Enter amount: ");
 
-        System.out.println("Enter a description: ");
+        System.out.print("Enter a description: ");
         String description = scanner.nextLine();
 
-        System.out.println("Enter category: ");
-        String category = scanner.nextLine();
+        String category = selectCategory(scanner);
 
         manager.addExpense(amount, description, category);
         System.out.println("\nExpense added successfully!");
@@ -137,7 +136,48 @@ public class Main {
 
     private static void handleViewTotal(ExpenseManager manager) {
         BigDecimal total = manager.getTotalExpenses();
-        System.out.println("Total Expenses: " + total);
+        System.out.println("Total Expenses: $" + total);
+    }
+
+    private static String selectCategory(Scanner scanner) {
+        System.out.println("\n--- Select a Category ---");
+        Category[] categories = Category.values();
+
+        // Numbered options
+        for (int i = 0; i < categories.length; i++) {
+            System.out.println((i + 1) + ". " + categories[i].getDisplayName());
+        }
+
+        int choice = -1;
+
+        // Input validation
+        while (choice < 1 || choice > categories.length) {
+            System.out.print("Choose a category (1-" + categories.length + "): ");
+
+            if (scanner.hasNextInt()) {
+                choice = scanner.nextInt();
+                scanner.nextLine();
+
+                if (choice < 1 || choice > categories.length) {
+                    System.out.println(
+                            "Invalid input. Please enter a valid number between 1 and " + categories.length + ".");
+                }
+            } else {
+                System.out.println("Invalid input. Please enter a valid number.");
+                scanner.next();
+            }
+        }
+
+        Category selectedCategory = categories[choice - 1];
+
+        // "Other" category handling (custom category)
+        if (selectedCategory == Category.OTHER) {
+            System.out.print("Enter custom category name: ");
+            String customCategory = scanner.nextLine().trim();
+            return customCategory.isEmpty() ? "Other" : customCategory;
+        }
+
+        return selectedCategory.getDisplayName();
     }
 
 }
