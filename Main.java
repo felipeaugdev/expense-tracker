@@ -25,7 +25,7 @@ public class Main {
         while (running) {
             System.out.println("\nSelect an option:");
             System.out.println("1. Add Expense");
-            System.out.println("2. View All Expenses");
+            System.out.println("2. View Expenses");
             System.out.println("3. Delete Expense");
             System.out.println("4. View Total Expenses");
             System.out.println("5. Exit");
@@ -37,7 +37,7 @@ public class Main {
                     handleAddExpense(scanner, manager);
                     break;
                 case 2:
-                    handleViewExpenses(manager);
+                    handleViewExpenses(scanner, manager);
                     break;
                 case 3:
                     handleDeleteExpense(scanner, manager);
@@ -107,14 +107,42 @@ public class Main {
         System.out.println("\nExpense added successfully!");
     }
 
-    private static void handleViewExpenses(ExpenseManager manager) {
-        List<Expense> expenses = manager.getAllExpenses();
+    private static void handleViewExpenses(Scanner scanner, ExpenseManager manager) {
+        System.out.println("\n--- Select Time Range ---");
+        System.out.println("1. All Time");
+        System.out.println("2. Last 7 Days");
+        System.out.println("3. Last 14 Days");
+        System.out.println("4. Last 30 Days");
+
+        int choice = readInt(scanner, "Choose an option (1-4): ");
+        int days = 0;
+
+        switch (choice) {
+            case 2:
+                days = 7;
+                break;
+            case 3:
+                days = 14;
+                break;
+            case 4:
+                days = 30;
+                break;
+            case 1:
+            default:
+                days = 0;
+                break;
+        }
+
+        List<Expense> expenses = manager.getExpensesByDateRange(days);
+
         if (expenses.isEmpty()) {
-            System.out.println("No expenses recorded yet.");
+            System.out.println("\nNo expenses recorded for the selected time range.");
             return;
         }
 
-        System.out.println("\n--- ALL EXPENSES ---");
+        String header = (days == 0) ? "ALL EXPENSES" : "EXPENSES (LAST " + days + " DAYS";
+        System.out.println("\n--- " + header + " ---");
+
         for (Expense e : expenses) {
             System.out.println("ID: " + e.getId() +
                     " | Date: " + e.getdDate() +

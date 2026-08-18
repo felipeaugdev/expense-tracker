@@ -1,5 +1,6 @@
 import java.math.BigDecimal;
 import java.time.LocalDate;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
@@ -79,6 +80,29 @@ public class ExpenseManager {
         }
 
         return categoryTotals;
+    }
+
+    /**
+     * Retrieve expenses filtered by date range.
+     * 
+     * @param days Number of days back to filter (7, 14, 30). Pass 0 for All Time.
+     * @return List of matching Expense objects.
+     */
+    public List<Expense> getExpensesByDateRange(int days) {
+        if (days <= 0) {
+            return getAllExpenses();
+        }
+
+        LocalDate cutoffDate = LocalDate.now().minusDays(days);
+        List<Expense> filteredExpenses = new ArrayList<>();
+
+        for (Expense expense : expenses) {
+            if (!expense.getdDate().isBefore(cutoffDate)) {
+                filteredExpenses.add(expense);
+            }
+        }
+
+        return filteredExpenses;
     }
 
 }
