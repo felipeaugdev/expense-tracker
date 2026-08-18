@@ -44,14 +44,6 @@ public class ExpenseManager {
         return removedFromMemory;
     }
 
-    public BigDecimal getTotalExpenses() {
-        BigDecimal total = BigDecimal.ZERO;
-        for (Expense expense : expenses) {
-            total = total.add(expense.getAmount());
-        }
-        return total;
-    }
-
     // HELPER: Calculates highest existing ID + 1 to avoid duplicate IDs
     private int calculateNextId() {
         int maxId = 0;
@@ -64,14 +56,16 @@ public class ExpenseManager {
     }
 
     /**
-     * Group total expenses by category
+     * Calculates total expenses grouped by category for a given date range.
      * 
+     * @param days Number of days back to include (0 for All Time).
      * @return Map where the key is the category name and the value is the total amount.
      */
-    public Map<String, BigDecimal> getTotalExpensesByCategory() {
+    public Map<String, BigDecimal> getTotalExpensesByCategory(int days) {
+        List<Expense> filtered = getExpensesByDateRange(days);
         Map<String, BigDecimal> categoryTotals = new TreeMap<>();
 
-        for (Expense expense : expenses) {
+        for (Expense expense : filtered) {
             String category = expense.getCategory();
             BigDecimal amount = expense.getAmount();
 
@@ -80,6 +74,22 @@ public class ExpenseManager {
         }
 
         return categoryTotals;
+    }
+
+    /**
+     * Calculates the grand total of all expenses for a given time range.
+     * 
+     * @param days Number of days back to include (0 for All Time).
+     * @return BigDecimal total of all expenses within the time range.
+     */
+    public BigDecimal getTotalExpenses(int days) {
+        List<Expense> filtered = getExpensesByDateRange(days);
+        BigDecimal total = BigDecimal.ZERO;
+
+        for (Expense expense : filtered) {
+            total = total.add(expense.getAmount());
+        }
+        return total;
     }
 
     /**
