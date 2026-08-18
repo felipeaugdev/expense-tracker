@@ -43,7 +43,7 @@ public class Main {
                     handleDeleteExpense(scanner, manager);
                     break;
                 case 4:
-                    handleViewTotal(manager);
+                    handleViewTotal(scanner, manager);
                     break;
                 case 5:
                     running = false;
@@ -108,31 +108,7 @@ public class Main {
     }
 
     private static void handleViewExpenses(Scanner scanner, ExpenseManager manager) {
-        System.out.println("\n--- Select Time Range ---");
-        System.out.println("1. All Time");
-        System.out.println("2. Last 7 Days");
-        System.out.println("3. Last 14 Days");
-        System.out.println("4. Last 30 Days");
-
-        int choice = readInt(scanner, "Choose an option (1-4): ");
-        int days = 0;
-
-        switch (choice) {
-            case 2:
-                days = 7;
-                break;
-            case 3:
-                days = 14;
-                break;
-            case 4:
-                days = 30;
-                break;
-            case 1:
-            default:
-                days = 0;
-                break;
-        }
-
+        int days = promptTimeRange(scanner);
         List<Expense> expenses = manager.getExpensesByDateRange(days);
 
         if (expenses.isEmpty()) {
@@ -163,21 +139,24 @@ public class Main {
         }
     }
 
-    private static void handleViewTotal(ExpenseManager manager) {
-        Map<String, BigDecimal> categoryTotals = manager.getTotalExpensesByCategory();
+    private static void handleViewTotal(Scanner scanner, ExpenseManager manager) {
+        int days = promptTimeRange(scanner);
+        Map<String, BigDecimal> categoryTotals = manager.getTotalExpensesByCategory(days);
 
         if (categoryTotals.isEmpty()) {
-            System.out.println("\nNo expenses recorded yet.");
+            System.out.println("\nNo expenses recorded for this time range.");
             return;
         }
 
-        System.out.println("\n--- EXPENSES BY CATEGORY ---");
-        BigDecimal grandTotal = BigDecimal.ZERO;
+        String header = (days == 0) ? "EXPENSES BY CATEGORY (ALL TIME)"
+                : "EXPENSES BY CATEGORY (LAST " + days + " DAYS)";
+        System.out.println("\n--- " + header + " ---");
 
         for (Map.Entry<String, BigDecimal> entry : categoryTotals.entrySet()) {
             System.out.printf("%-20s : $%s%n", entry.getKey(), entry.getValue());
-            grandTotal = grandTotal.add(entry.getValue());
         }
+
+        BigDecimal grandTotal = manager.getTotalExpenses(days);
 
         System.out.println("----------------------------");
         System.out.printf("%-20s : $%s%n", "GRAND TOTAL", grandTotal);
@@ -224,4 +203,25 @@ public class Main {
         return selectedCategory.getDisplayName();
     }
 
+    private static int promptTimeRange(Scanner scanner) {
+        System.out.println("\n--- Select Time Range ---");
+        System.out.println("1. All Time");
+        System.out.println("2. Last 7 Days");
+        System.out.println("3. Last 14 Days");
+        System.out.println("4. Last 30 Days");
+
+        int choice = readInt(scanner, "Choose an option (1-4): ");
+
+        switch (choice) {
+            case 2:
+                return 7;
+            case 3:
+                return 14;
+            case 4:
+                return 30;
+            case 1:
+            default:
+                return 0;
+        }
+    }
 }
