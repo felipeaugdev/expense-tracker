@@ -1,6 +1,6 @@
 # Java CLI Expense Tracker
 
-A modular, architecture-focused Java command-line application for tracking personal expenses. Built to demonstrate clean object-oriented design, loose coupling, the Data Access Object (DAO) pattern, and database persistence using JDBC and MariaDB.
+A modular, architecture-focused Java command-line application for tracking and analyzing personal expenses. Built to demonstrate clean object-oriented design, loose coupling, the Data Access Object (DAO) pattern, and database persistence using JDBC and MariaDB.
 
 ---
 
@@ -13,8 +13,17 @@ A modular, architecture-focused Java command-line application for tracking perso
   * `CsvExpenseRepository`: File-based storage reading and writing with standard CSV format.
   * `InMemoryExpenseRepository`: Zero-disk-access RAM storage designed for high-speed unit testing.
 * **Granular SQL Operations:** Utilizes MariaDB `UPSERT` (`ON DUPLICATE KEY UPDATE`) and targeted `DELETE` operations for $O(1)$ updates instead of full table overwrites.
-* **SQL Injection Prevention:** All SQL persistence uses parameterized `PreparedStatement` queries.
-* **Environment Variable Credentials:** Security sensitive parameters (like database credentials) are externalized via environment variables.
+* **Defensive Input & Domain Validation:** Strong typing using custom `Category` enums, immutable `BigDecimal` math for currency scaling, and safe date handling using Java's `java.time` API.
+* **Environment Variable Credentials:** Security-sensitive parameters (like database credentials) are externalized via environment variables.
+
+---
+
+## 💡 Features & Analytics
+
+* **Interactive Category Picker:** Choose from standardized categories or supply a custom string via the `OTHER` option.
+* **Time-Series Date Filtering:** View raw expenses or aggregated totals filtered by custom windows (*All Time*, *Last 7 Days*, *Last 14 Days*, *Last 30 Days*).
+* **Category Aggregation:** Automatically groups spending by category and outputs totals using sorted data structures (`TreeMap`).
+* **Monthly Comparison Analytics:** Generate a visual dashboard card comparing spending metrics between the current and previous calendar months, complete with delta variances and percentage indicators.
 
 ---
 
@@ -30,12 +39,14 @@ A modular, architecture-focused Java command-line application for tracking perso
 ## 📁 Project Structure
 ```text
 ├── Expense.java                   # Core Domain Model
+├── Category.java                  # Pre-defined Category Enum
 ├── ExpenseRepository.java         # DAO Interface (Contract)
-├── ExpenseManager.java            # Business Logic Layer
+├── ExpenseManager.java            # Business Logic & Aggregation Layer
+├── MonthOverMonthReport.java      # Data Carrier for Comparative Metrics
 ├── CsvExpenseRepository.java      # CSV Storage Implementation
 ├── InMemoryExpenseRepository.java # In-Memory RAM Storage Implementation
 ├── DatabaseExpenseRepository.java # JDBC / MariaDB Storage Implementation
-├── Main.java                      # Application Entry Point & DI Assembler
+├── Main.java                      # Application Entry Point & CLI Renderer
 ├── schema.sql                     # MariaDB Database Bootstrap Script
 ├── .gitignore
 └── README.md
@@ -83,7 +94,7 @@ FLUSH PRIVILEGES;
 Set your database password in your terminal environment and compile/run the app:
 
 ```bash
-# Set your environment variables (optional, defaults to local dev settings)
+# Set your environment variable
 export DB_PASS="your_password"
 
 # Compile all Java files
