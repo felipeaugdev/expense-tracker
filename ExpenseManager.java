@@ -1,5 +1,7 @@
 import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.time.LocalDate;
+import java.time.YearMonth;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -113,6 +115,47 @@ public class ExpenseManager {
         }
 
         return filteredExpenses;
+    }
+
+    /**
+     * Calculates total expenses for a specific calendar month.
+     */
+    public BigDecimal getTotalExpensesForMonth(YearMonth yearMonth) {
+        BigDecimal total = BigDecimal.ZERO;
+
+        for (Expense expense : expenses) {
+            YearMonth expenseMonth = YearMonth.from(expense.getdDate());
+            if (expenseMonth.equals(yearMonth)) {
+                total = total.add(expense.getAmount());
+            }
+        }
+
+        return total;
+    }
+
+    /**
+     * Generates a Month-over-Month report comparing the current month against the previous month.
+     */
+    public MonthOverMonthReport getMonthOverMonthReport() {
+        YearMonth currentMonth = YearMonth.now();
+        YearMonth previousMonth = currentMonth.minusMonths(1);
+
+        BigDecimal currentTotal = getTotalExpensesForMonth(currentMonth);
+        BigDecimal previousTotal = getTotalExpensesForMonth(previousMonth);
+
+        BigDecimal difference = currentTotal.subtract(previousTotal);
+
+        BigDecimal percentageChange = BigDecimal.ZERO;
+        if (previousTotal.compareTo(BigDecimal.ZERO) > 0) {
+            percentageChange = difference
+                    .divide(previousTotal, 4, RoundingMode.HALF_UP)
+                    .multiply(new BigDecimal("100"))
+                    .setScale(2, RoundingMode.HALF_UP);
+        }
+
+        return new MonthOverMonthReport(previousMonth, currentMonth,
+                previousTotal, currentTotal,
+                difference, percentageChange);
     }
 
 }

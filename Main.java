@@ -1,5 +1,6 @@
 import java.math.BigDecimal;
 import java.math.RoundingMode;
+import java.time.format.DateTimeFormatter;
 import java.util.List;
 import java.util.Scanner;
 import java.util.Map;
@@ -28,7 +29,8 @@ public class Main {
             System.out.println("2. View Expenses");
             System.out.println("3. Delete Expense");
             System.out.println("4. View Total Expenses");
-            System.out.println("5. Exit");
+            System.out.println("5. Monthly Comparison");
+            System.out.println("6. Exit");
 
             int choice = readInt(scanner, "> ");
 
@@ -46,6 +48,9 @@ public class Main {
                     handleViewTotal(scanner, manager);
                     break;
                 case 5:
+                    handleMonthOverMonthComparison(manager);
+                    break;
+                case 6:
                     running = false;
                     System.out.println("Goodbye!");
                     break;
@@ -160,6 +165,47 @@ public class Main {
 
         System.out.println("----------------------------");
         System.out.printf("%-20s : $%s%n", "GRAND TOTAL", grandTotal);
+    }
+
+    public static void handleMonthOverMonthComparison(ExpenseManager manager) {
+        MonthOverMonthReport report = manager.getMonthOverMonthReport();
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("MMMM yyyy");
+
+        String prevMonthName = report.getPreviousMonth().format(formatter);
+        String currMonthName = report.getCurrentMonth().format(formatter);
+
+        BigDecimal diff = report.getDifference();
+        BigDecimal pct = report.getPercentageChange();
+
+        String prevLabel = String.format("Previous Month (%s)", prevMonthName);
+        String currLabel = String.format("Current Month  (%s)", currMonthName);
+
+        String diffSign = diff.compareTo(BigDecimal.ZERO) >= 0 ? "+" : "";
+        String pctSymbol = pct.compareTo(BigDecimal.ZERO) > 0 ? "▲ +"
+                : (pct.compareTo(BigDecimal.ZERO) < 0 ? "▼ " : "");
+
+        String statusMessage;
+        if (diff.compareTo(BigDecimal.ZERO) > 0) {
+            statusMessage = "Spending increased compared to last month.";
+        } else if (diff.compareTo(BigDecimal.ZERO) < 0) {
+            statusMessage = "Spending decreased compared to last month.";
+        } else {
+            statusMessage = "Spending remained exactly the same.";
+        }
+
+        // Formatted dashboard card
+        System.out.println("\n======================================================");
+        System.out.println("                MONTH-OVER-MONTH REPORT               ");
+        System.out.println("======================================================");
+        System.out.printf("   %-30s : $%s%n", prevLabel, report.getPreviousTotal());
+        System.out.printf("   %-30s : $%s%n", currLabel, report.getCurrentTotal());
+        System.out.println("------------------------------------------------------");
+        System.out.printf("   Net Difference                 : %s$%s%n", diffSign, diff);
+        System.out.printf("   Percentage Change              : %s%s%%%n", pctSymbol, pct);
+        System.out.println("------------------------------------------------------");
+        System.out.printf("   Status : %s%n", statusMessage);
+        System.out.println("======================================================");
+
     }
 
     private static String selectCategory(Scanner scanner) {
