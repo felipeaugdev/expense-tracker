@@ -1,6 +1,6 @@
 # Java CLI Expense Tracker
 
-A modular, architecture-focused Java command-line application for tracking and analyzing personal expenses. Built to demonstrate clean object-oriented design, loose coupling, the Data Access Object (DAO) pattern, and database persistence using JDBC and MariaDB.
+A modular, architecture-focused Java command-line application for tracking and analyzing personal expenses. Built to demonstrate clean object-oriented design, loose coupling, the Data Access Object (DAO) pattern, build automation with Maven, and database persistence using JDBC and MariaDB.
 
 ---
 
@@ -29,27 +29,40 @@ A modular, architecture-focused Java command-line application for tracking and a
 
 ## 🛠️ Tech Stack & Requirements
 
-* **Language:** Java 11+ (Core Java / JDBC)
+* **Language:** Java 21 (Core Java / JDBC)
+* **Build System:** Apache Maven
 * **Database:** MariaDB / MySQL
 * **JDBC Driver:** MariaDB Java Client (`mariadb-java-client`)
+* **Testing:** JUnit 5 & Mockito
 * **Environment:** Linux, Windows, macOS
 
 ---
 
 ## 📁 Project Structure
 ```text
-├── Expense.java                   # Core Domain Model
-├── Category.java                  # Pre-defined Category Enum
-├── ExpenseRepository.java         # DAO Interface (Contract)
-├── ExpenseManager.java            # Business Logic & Aggregation Layer
-├── MonthOverMonthReport.java      # Data Carrier for Comparative Metrics
-├── CsvExpenseRepository.java      # CSV Storage Implementation
-├── InMemoryExpenseRepository.java # In-Memory RAM Storage Implementation
-├── DatabaseExpenseRepository.java # JDBC / MariaDB Storage Implementation
-├── Main.java                      # Application Entry Point & CLI Renderer
-├── schema.sql                     # MariaDB Database Bootstrap Script
+expense-tracker/
+├── pom.xml                               # Maven Project Descriptor & Dependencies
+├── schema.sql                            # MariaDB Database Bootstrap Script
 ├── .gitignore
-└── README.md
+├── README.md
+└── src/
+    ├── main/
+    │   └── java/
+    │       └── com/
+    │           └── felipeaugdev/
+    │               ├── Category.java
+    │               ├── CsvExpenseRepository.java
+    │               ├── DatabaseExpenseRepository.java
+    │               ├── Expense.java
+    │               ├── ExpenseManager.java
+    │               ├── ExpenseRepository.java
+    │               ├── InMemoryExpenseRepository.java
+    │               ├── Main.java
+    │               └── MonthOverMonthReport.java
+    └── test/
+        └── java/
+            └── com/
+                └── felipeaugdev/         # Unit Tests (JUnit 5 & Mockito)
 ```
 
 ---
@@ -90,18 +103,28 @@ GRANT ALL PRIVILEGES ON expense_tracker.* TO 'expense_user'@'localhost';
 FLUSH PRIVILEGES;
 ```
 
-### 4. Run the Application
-Set your database password in your terminal environment and compile/run the app:
+### 4. Build & Run the Application
+Set your database password in your terminal environment and compile/run the app using Maven:
 
 ```bash
 # Set your environment variable
 export DB_PASS="your_password"
 
-# Compile all Java files
-javac *.java
+# Compile the project
+mvn compile
 
-# Run the Application
-java Main
+# Run the application
+mvn exec:java -Dexec.mainClass="com.felipeaugdev.Main"
+```
+
+---
+
+## 🧪 Running Automated Tests
+
+Execute the test suite with JUnit 5 and Mockito:
+
+```bash
+mvn test
 ```
 
 ---
