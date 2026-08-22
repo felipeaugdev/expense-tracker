@@ -16,3 +16,6 @@ expenses.csv
 # OS Generated Files
 .DS_Store
 thumbs.db
+
+# Maven generated directory
+/target/
