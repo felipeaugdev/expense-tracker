@@ -111,7 +111,7 @@ public class ExpenseManager {
         List<Expense> filteredExpenses = new ArrayList<>();
 
         for (Expense expense : expenses) {
-            if (!expense.getdDate().isBefore(cutoffDate)) {
+            if (!expense.getDate().isBefore(cutoffDate)) {
                 filteredExpenses.add(expense);
             }
         }
@@ -126,7 +126,7 @@ public class ExpenseManager {
         BigDecimal total = BigDecimal.ZERO;
 
         for (Expense expense : expenses) {
-            YearMonth expenseMonth = YearMonth.from(expense.getdDate());
+            YearMonth expenseMonth = YearMonth.from(expense.getDate());
             if (expenseMonth.equals(yearMonth)) {
                 total = total.add(expense.getAmount());
             }

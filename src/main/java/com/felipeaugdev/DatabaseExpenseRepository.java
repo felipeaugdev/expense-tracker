@@ -64,7 +64,7 @@ public class DatabaseExpenseRepository implements ExpenseRepository {
 
             stmt.setInt(1, expense.getId());
             stmt.setBigDecimal(2, expense.getAmount());
-            stmt.setDate(3, java.sql.Date.valueOf(expense.getdDate()));
+            stmt.setDate(3, java.sql.Date.valueOf(expense.getDate()));
             stmt.setString(4, expense.getDescription());
             stmt.setString(5, expense.getCategory());
 

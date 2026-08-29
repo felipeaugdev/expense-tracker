@@ -89,7 +89,7 @@ public class CsvExpenseRepository implements ExpenseRepository {
             for (Expense e : expenses) {
                 writer.println(e.getId() + "," +
                         e.getAmount() + "," +
-                        e.getdDate() + "," +
+                        e.getDate() + "," +
                         escapeCsv(e.getDescription()) + "," +
                         escapeCsv(e.getCategory()));
             }

@@ -128,7 +128,7 @@ public class Main {
 
         for (Expense e : expenses) {
             System.out.println("ID: " + e.getId() +
-                    " | Date: " + e.getdDate() +
+                    " | Date: " + e.getDate() +
                     " | Amount: $" + e.getAmount() +
                     " | Description: " + e.getDescription() +
                     " | Category: " + e.getCategory());

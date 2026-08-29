@@ -3,16 +3,41 @@ package com.felipeaugdev;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 
+import jakarta.persistence.*;
+
+@Entity
+@Table(name = "expenses")
 public class Expense {
 
-    private int id;
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Integer id;
+
+    @Column(nullable = false, precision = 10, scale = 2)
     private BigDecimal amount;
+
+    @Column(name = "expense_date", nullable = false)
     private LocalDate date;
+
+    @Column(nullable = false)
     private String description;
+
+    @Column(nullable = false)
     private String category;
 
-    // --- CONSTRUCTOR ---
-    public Expense(int id, BigDecimal amount, LocalDate date, String description, String category) {
+    // --- CONSTRUCTORS ---
+
+    public Expense() {
+    }
+
+    public Expense(BigDecimal amount, LocalDate date, String description, String category) {
+        this.amount = amount;
+        this.date = date;
+        this.description = description;
+        this.category = category;
+    }
+
+    public Expense(Integer id, BigDecimal amount, LocalDate date, String description, String category) {
         this.id = id;
         this.amount = amount;
         this.date = date;
@@ -25,7 +50,7 @@ public class Expense {
         return id;
     }
 
-    public void setId(int id) {
+    public void setId(Integer id) {
         this.id = id;
     }
 
@@ -37,7 +62,7 @@ public class Expense {
         this.amount = amount;
     }
 
-    public LocalDate getdDate() {
+    public LocalDate getDate() {
         return date;
     }
 
