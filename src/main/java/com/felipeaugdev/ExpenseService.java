@@ -9,54 +9,32 @@ import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
 
-public class ExpenseManager {
+import org.springframework.stereotype.Service;
+
+@Service
+public class ExpenseService {
 
     private final ExpenseRepository repository;
-    private List<Expense> expenses;
-    private int nextId;
 
-    // Dependency Injection: The repository is passed into the constructor from outside
-    public ExpenseManager(ExpenseRepository repository) {
-        // Load repository and existing expenses on app startup
+    public ExpenseService(ExpenseRepository repository) {
         this.repository = repository;
-        this.expenses = repository.loadExpenses();
-
-        // Determine the correct nextId
-        this.nextId = calculateNextId();
     }
 
-    public void addExpense(BigDecimal amount, String description, String category) {
-        Expense newExpense = new Expense(nextId, amount, LocalDate.now(), description, category);
-        expenses.add(newExpense);
-        nextId++;
-
-        // Auto-save after adding
-        repository.save(newExpense);
+    public Expense addExpense(BigDecimal amount, String description, String category) {
+        Expense newExpense = new Expense(amount, LocalDate.now(), description, category);
+        return repository.save(newExpense);
     }
 
     public List<Expense> getAllExpenses() {
-        return expenses;
+        return repository.findAll();
     }
 
     public boolean deleteExpense(int id) {
-        boolean removedFromMemory = expenses.removeIf(expense -> expense.getId() == id);
-
-        if (removedFromMemory) {
+        if (repository.existsById(id)) {
             repository.deleteById(id);
+            return true;
         }
-
-        return removedFromMemory;
-    }
-
-    // HELPER: Calculates highest existing ID + 1 to avoid duplicate IDs
-    private int calculateNextId() {
-        int maxId = 0;
-        for (Expense e : expenses) {
-            if (e.getId() > maxId) {
-                maxId = e.getId();
-            }
-        }
-        return maxId + 1;
+        return false;
     }
 
     /**
@@ -108,9 +86,10 @@ public class ExpenseManager {
         }
 
         LocalDate cutoffDate = LocalDate.now().minusDays(days);
+        List<Expense> allExpenses = repository.findAll();
         List<Expense> filteredExpenses = new ArrayList<>();
 
-        for (Expense expense : expenses) {
+        for (Expense expense : allExpenses) {
             if (!expense.getDate().isBefore(cutoffDate)) {
                 filteredExpenses.add(expense);
             }
@@ -125,7 +104,7 @@ public class ExpenseManager {
     public BigDecimal getTotalExpensesForMonth(YearMonth yearMonth) {
         BigDecimal total = BigDecimal.ZERO;
 
-        for (Expense expense : expenses) {
+        for (Expense expense : repository.findAll()) {
             YearMonth expenseMonth = YearMonth.from(expense.getDate());
             if (expenseMonth.equals(yearMonth)) {
                 total = total.add(expense.getAmount());

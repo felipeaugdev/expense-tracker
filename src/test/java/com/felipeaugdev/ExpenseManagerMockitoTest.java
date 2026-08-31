@@ -21,12 +21,12 @@ class ExpenseManagerMockitoTest {
     private ExpenseRepository repositoryMock;
 
     @InjectMocks
-    private ExpenseManager manager;
+    private ExpenseService manager;
 
     @Test
     void testAddExpenseTriggersRepositorySave() {
         when(repositoryMock.loadExpenses()).thenReturn(new ArrayList<>());
-        manager = new ExpenseManager(repositoryMock);
+        manager = new ExpenseService(repositoryMock);
 
         manager.addExpense(new BigDecimal("45.00"), "Dinner", "FOOD");
 
@@ -38,7 +38,7 @@ class ExpenseManagerMockitoTest {
         Expense sampleExpense = new Expense(1, new BigDecimal("12.00"), LocalDate.now(), "Bus", "TRANSPORTATION");
 
         when(repositoryMock.loadExpenses()).thenReturn(new ArrayList<>(List.of(sampleExpense)));
-        manager = new ExpenseManager(repositoryMock);
+        manager = new ExpenseService(repositoryMock);
 
         boolean deleted = manager.deleteExpense(1);
 
@@ -49,7 +49,7 @@ class ExpenseManagerMockitoTest {
     @Test
     void testDeleteNonExistentExpenseDoesNotTriggerRepositoryDelete() {
         when(repositoryMock.loadExpenses()).thenReturn(new ArrayList<>());
-        manager = new ExpenseManager(repositoryMock);
+        manager = new ExpenseService(repositoryMock);
 
         boolean deleted = manager.deleteExpense(999);
 

@@ -19,7 +19,7 @@ public class Main {
         // ExpenseRepository repository = new CsvExpenseRepository();
         // ExpenseRepository repository = new InMemoryExpenseRepository();
 
-        ExpenseManager manager = new ExpenseManager(repository);
+        ExpenseService manager = new ExpenseService(repository);
 
         boolean running = true;
 
@@ -102,7 +102,7 @@ public class Main {
 
     // --- HELPER METHODS ---
 
-    private static void handleAddExpense(Scanner scanner, ExpenseManager manager) {
+    private static void handleAddExpense(Scanner scanner, ExpenseService manager) {
         BigDecimal amount = readBigDecimal(scanner, "Enter amount: ");
 
         System.out.print("Enter a description: ");
@@ -114,7 +114,7 @@ public class Main {
         System.out.println("\nExpense added successfully!");
     }
 
-    private static void handleViewExpenses(Scanner scanner, ExpenseManager manager) {
+    private static void handleViewExpenses(Scanner scanner, ExpenseService manager) {
         int days = promptTimeRange(scanner);
         List<Expense> expenses = manager.getExpensesByDateRange(days);
 
@@ -135,7 +135,7 @@ public class Main {
         }
     }
 
-    private static void handleDeleteExpense(Scanner scanner, ExpenseManager manager) {
+    private static void handleDeleteExpense(Scanner scanner, ExpenseService manager) {
         int id = readInt(scanner, "Enter Expense ID to delete: ");
 
         boolean deleted = manager.deleteExpense(id);
@@ -146,7 +146,7 @@ public class Main {
         }
     }
 
-    private static void handleViewTotal(Scanner scanner, ExpenseManager manager) {
+    private static void handleViewTotal(Scanner scanner, ExpenseService manager) {
         int days = promptTimeRange(scanner);
         Map<String, BigDecimal> categoryTotals = manager.getTotalExpensesByCategory(days);
 
@@ -169,7 +169,7 @@ public class Main {
         System.out.printf("%-20s : $%s%n", "GRAND TOTAL", grandTotal);
     }
 
-    public static void handleMonthOverMonthComparison(ExpenseManager manager) {
+    public static void handleMonthOverMonthComparison(ExpenseService manager) {
         MonthOverMonthReport report = manager.getMonthOverMonthReport();
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("MMMM yyyy");
 

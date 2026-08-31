@@ -10,13 +10,13 @@ import org.junit.jupiter.api.Test;
 
 public class ExpenseManagerTest {
 
-    private ExpenseManager manager;
+    private ExpenseService manager;
     private InMemoryExpenseRepository repository;
 
     @BeforeEach
     void setUp() {
         repository = new InMemoryExpenseRepository();
-        manager = new ExpenseManager(repository);
+        manager = new ExpenseService(repository);
     }
 
     @Test
