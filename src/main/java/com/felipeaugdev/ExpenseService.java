@@ -103,8 +103,9 @@ public class ExpenseService {
      */
     public BigDecimal getTotalExpensesForMonth(YearMonth yearMonth) {
         BigDecimal total = BigDecimal.ZERO;
+        List<Expense> allExpenses = repository.findAll();
 
-        for (Expense expense : repository.findAll()) {
+        for (Expense expense : allExpenses) {
             YearMonth expenseMonth = YearMonth.from(expense.getDate());
             if (expenseMonth.equals(yearMonth)) {
                 total = total.add(expense.getAmount());

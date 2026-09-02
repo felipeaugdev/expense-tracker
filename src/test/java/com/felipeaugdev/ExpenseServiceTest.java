@@ -25,6 +25,7 @@ public class ExpenseServiceTest {
     private ExpenseService service;
 
     @Test
+    @SuppressWarnings("null")
     void testAddExpenseSavesAndReturnsExpense() {
         Expense sample = new Expense(1, new BigDecimal("5.50"), LocalDate.now(), "Coffee", "FOOD");
         when(repository.save(any(Expense.class))).thenReturn(sample);
