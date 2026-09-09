@@ -22,6 +22,7 @@ services:
           "localhost",
           "-u",
           "expense_user",
+          "-pchange_me",
         ]
       interval: 5s
       timeout: 3s
