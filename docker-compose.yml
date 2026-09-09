@@ -22,12 +22,11 @@ services:
           "localhost",
           "-u",
           "expense_user",
-          "-pchange_me",
         ]
       interval: 5s
-      timeout: 5s
-      retries: 10
-      start_period: 20s
+      timeout: 3s
+      retries: 5
+      start_period: 15s
 
   app:
     build: .
