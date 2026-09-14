@@ -1,0 +1,192 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Expense Tracker Dashboard</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Chart.js CDN -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  </head>
+  <body class="bg-slate-100 text-slate-800 font-sans min-h-screen p-6">
+    <div class="max-w-6xl mx-auto space-y-6">
+      <!-- Header -->
+      <header
+        class="flex justify-between items-center bg-white p-6 rounded-xl shadow-sm border border-slate-200"
+      >
+        <div>
+          <h1 class="text-2xl font-bold text-slate-900">Expense Tracker</h1>
+          <p class="text-sm text-slate-500">
+            Personal spending analytics and history
+          </p>
+        </div>
+        <span
+          class="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-emerald-100 text-emerald-800"
+          >API Connected</span
+        >
+      </header>
+
+      <!-- Analytics Cards -->
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+        <div class="bg-white p-6 rounded-xl shadow-sm border border-slate-200">
+          <h2
+            class="text-xs font-semibold text-slate-400 uppercase tracking-wider"
+          >
+            Current Month
+          </h2>
+          <p
+            id="current-month-total"
+            class="text-3xl font-extrabold text-slate-900 mt-2"
+          >
+            $0.00
+          </p>
+        </div>
+        <div class="bg-white p-6 rounded-xl shadow-sm border border-slate-200">
+          <h2
+            class="text-xs font-semibold text-slate-400 uppercase tracking-wider"
+          >
+            Previous Month
+          </h2>
+          <p
+            id="previous-month-total"
+            class="text-3xl font-extrabold text-slate-900 mt-2"
+          >
+            $0.00
+          </p>
+        </div>
+        <div class="bg-white p-6 rounded-xl shadow-sm border border-slate-200">
+          <h2
+            class="text-xs font-semibold text-slate-400 uppercase tracking-wider"
+          >
+            Month Variance
+          </h2>
+          <p
+            id="month-variance"
+            class="text-3xl font-extrabold text-slate-900 mt-2"
+          >
+            0%
+          </p>
+        </div>
+      </div>
+
+      <!-- Main Content Grid -->
+      <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        <!-- Left Column: Add Expense Form -->
+        <div class="bg-white p-6 rounded-xl shadow-sm border border-slate-200">
+          <h2 class="text-lg font-bold text-slate-900 mb-4">Add Expense</h2>
+          <form id="expense-form" class="space-y-4">
+            <div>
+              <label class="block text-sm font-medium text-slate-700 mb-1"
+                >Amount ($)</label
+              >
+              <input
+                type="number"
+                id="amount"
+                step="0.01"
+                required
+                placeholder="0.00"
+                class="w-full px-3 py-2 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500"
+              />
+            </div>
+            <div>
+              <label class="block text-sm font-medium text-slate-700 mb-1"
+                >Category</label
+              >
+              <select
+                id="category"
+                required
+                class="w-full px-3 py-2 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500"
+              >
+                <option value="FOOD">Food</option>
+                <option value="TRANSPORTATION">Transportation</option>
+                <option value="UTILITIES">Utilities</option>
+                <option value="HOUSING">Housing</option>
+                <option value="ENTERTAINMENT">Entertainment</option>
+                <option value="HEALTHCARE">Healthcare</option>
+                <option value="SHOPPING">Shopping</option>
+                <option value="OTHER">Other</option>
+              </select>
+            </div>
+            <div>
+              <label class="block text-sm font-medium text-slate-700 mb-1"
+                >Description</label
+              >
+              <input
+                type="text"
+                id="description"
+                required
+                placeholder="e.g. Groceries"
+                class="w-full px-3 py-2 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500"
+              />
+            </div>
+            <button
+              type="submit"
+              class="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-medium py-2 px-4 rounded-lg transition duration-200"
+            >
+              Save Expense
+            </button>
+          </form>
+        </div>
+
+        <!-- Right Column: Chart and Table -->
+        <div class="lg:col-span-2 space-y-6">
+          <!-- Category Chart -->
+          <div
+            class="bg-white p-6 rounded-xl shadow-sm border border-slate-200"
+          >
+            <h2 class="text-lg font-bold text-slate-900 mb-4">
+              Spending by Category
+            </h2>
+            <div class="max-h-60 flex justify-center">
+              <canvas id="category-chart"></canvas>
+            </div>
+          </div>
+
+          <!-- Transactions Table -->
+          <div
+            class="bg-white p-6 rounded-xl shadow-sm border border-slate-200"
+          >
+            <div class="flex justify-between items-center mb-4">
+              <h2 class="text-lg font-bold text-slate-900">
+                Recent Transactions
+              </h2>
+              <select
+                id="filter-days"
+                class="text-sm border border-slate-300 rounded-lg px-2 py-1"
+              >
+                <option value="">All Time</option>
+                <option value="7">Last 7 Days</option>
+                <option value="14">Last 14 Days</option>
+                <option value="30">Last 30 Days</option>
+              </select>
+            </div>
+            <div class="overflow-x-auto">
+              <table class="w-full text-left border-collapse">
+                <thead>
+                  <tr
+                    class="border-b border-slate-200 text-xs font-semibold text-slate-400 uppercase"
+                  >
+                    <th class="py-2">Date</th>
+                    <th class="py-2">Category</th>
+                    <th class="py-2">Description</th>
+                    <th class="py-2 text-right">Amount</th>
+                    <th class="py-2 text-center">Action</th>
+                  </tr>
+                </thead>
+                <tbody
+                  id="expense-table-body"
+                  class="divide-y divide-slate-100 text-sm"
+                >
+                  <!-- Rows (JS) -->
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <script src="app.js"></script>
+  </body>
+</html>
