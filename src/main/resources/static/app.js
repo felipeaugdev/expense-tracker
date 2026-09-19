@@ -29,18 +29,22 @@ async function loadMonthlyReport() {
     const report = await response.json();
 
     document.getElementById("current-month-total").innerText = formatCurrency(
-      report.currentMonthTotal || 0,
+      report.currentTotal || 0,
     );
     document.getElementById("previous-month-total").innerText = formatCurrency(
-      report.previousMonthTotal || 0,
+      report.previousTotal || 0,
     );
 
     const variance = report.percentageChange ?? report.variance ?? 0;
     const varianceElem = document.getElementById("month-variance");
-    varianceElem.innerText = `${variance >= 0 ? "+" : ""}${variance.toFixed(1)}%`;
-    varianceElem.className = `text-3xl font-extrabold mt-2 ${
-      variance > 0 ? "text-amber-600" : "text-emerald-600"
-    }`;
+
+    let varianceColor = "text-slate-500";
+    if (variance > 0) varianceColor = "text-amber-600";
+    if (variance > 0) varianceColor = "text-emerald-600";
+    const sign = variance > 0 ? "+" : "";
+
+    varianceElem.innerText = `${sign}${variance.toFixed(1)}%`;
+    varianceElem.className = `text-3xl font-extrabold mt-2 ${varianceColor}`;
   } catch (err) {
     console.error("Error loading monthly report: ", err);
   }
@@ -111,19 +115,21 @@ async function loadTransactions(days = "") {
     if (expenses.length === 0) {
       tbody.innerHTML = `
         <tr>
-            <td colspan="5" class="py-4 text-center text-slate-400>No transactions found</td>"
+            <td colspan="5" class="py-4 text-center text-slate-400">No transactions found</td>
         </tr>`;
       return;
     }
 
-    expenses.forEach((exp) => {
+    const reversedExpenses = [...expenses].reverse();
+
+    reversedExpenses.forEach((exp) => {
       const tr = document.createElement("tr");
       tr.className = "hover:bg-slate-50 transition";
       tr.innerHTML = `
         <td class="py-3 font-mono text-xs text-slate-500">${exp.date || "N/A"}</td>
         <td class="py-3"><span class="px-2 py-1 rounded text-xs font-semibold bg-slate-100 text-slate-700">${exp.category}</span></td>
         <td class="py-3 font-medium text-slate-800">${exp.description}</td>
-        <td class="py-3 font-right font-bold text-slate-900">${formatCurrency(exp.amount)}</td>
+        <td class="py-3 text-right font-bold text-slate-900">${formatCurrency(exp.amount)}</td>
         <td class="py-3 text-center">
           <button onclick="deleteExpense(${exp.id})" class="text-rose-500 hover:text-rose-700 font-medium text-xs px-2 py-1 rounded hover:bg-rose-50 transition">
             Delete
@@ -171,7 +177,9 @@ async function deleteExpense(id) {
     if (!response.ok) throw new Error("Failed to delete expense");
 
     await initDashboard();
-  } catch (err) {}
+  } catch (err) {
+    alert("Error deleting expense: " + err.message);
+  }
 }
 
 function formatCurrency(amount) {
