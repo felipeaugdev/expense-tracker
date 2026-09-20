@@ -2,6 +2,17 @@ const API_BASE_URL = "/api/expenses";
 
 let categoryChart = null;
 
+const CATEGORY_COLORS = {
+  FOOD: "#10b981",
+  TRANSPORTATION: "#3b82f6",
+  UTILITIES: "#f59e0b",
+  HOUSING: "#6366f1",
+  ENTERTAINMENT: "#ec4899",
+  HEALTHCARE: "#ef4444",
+  SHOPPING: "#8b5cf6",
+  OTHER: "#64748b",
+};
+
 document.addEventListener("DOMContentLoaded", () => {
   initDashboard();
 
@@ -10,15 +21,18 @@ document.addEventListener("DOMContentLoaded", () => {
     .addEventListener("submit", handleAddExpense);
 
   document.getElementById("filter-days").addEventListener("change", (e) => {
-    loadTransactions(e.target.value);
+    const days = e.target.value;
+    loadTransactions(days);
+    loadCategoryTotals(days);
   });
 });
 
 async function initDashboard() {
+  const currentDays = document.getElementById("filter-days").value;
   await Promise.all([
     loadMonthlyReport(),
-    loadCategoryTotals(),
-    loadTransactions(document.getElementById("filter-days").value),
+    loadCategoryTotals(currentDays),
+    loadTransactions(currentDays),
   ]);
 }
 
@@ -35,12 +49,12 @@ async function loadMonthlyReport() {
       report.previousTotal || 0,
     );
 
-    const variance = report.percentageChange ?? report.variance ?? 0;
+    const variance = report.percentageChange ?? 0;
     const varianceElem = document.getElementById("month-variance");
 
     let varianceColor = "text-slate-500";
     if (variance > 0) varianceColor = "text-amber-600";
-    if (variance > 0) varianceColor = "text-emerald-600";
+    if (variance < 0) varianceColor = "text-emerald-600";
     const sign = variance > 0 ? "+" : "";
 
     varianceElem.innerText = `${sign}${variance.toFixed(1)}%`;
@@ -50,9 +64,12 @@ async function loadMonthlyReport() {
   }
 }
 
-async function loadCategoryTotals() {
+async function loadCategoryTotals(days = "") {
   try {
-    const response = await fetch(`${API_BASE_URL}/category-totals`);
+    const url = days
+      ? `${API_BASE_URL}/category-totals?days=${days}`
+      : `${API_BASE_URL}/category-totals`;
+    const response = await fetch(url);
     if (!response.ok) throw new Error("Failed to fetch category totals");
     const totals = await response.json();
 
@@ -72,6 +89,10 @@ function renderChart(labels, data) {
     categoryChart.destroy();
   }
 
+  const backgroundColors = labels.map(
+    (label) => CATEGORY_COLORS[label.toUpperCase()] || "#94a3b8",
+  );
+
   categoryChart = new Chart(ctx, {
     type: "doughnut",
     data: {
@@ -79,16 +100,7 @@ function renderChart(labels, data) {
       datasets: [
         {
           data: data,
-          backgroundColor: [
-            "#6366f1",
-            "#10b981",
-            "#f59e0b",
-            "#ef4444",
-            "#8b5cf6",
-            "#ec4899",
-            "#14b8a6",
-            "#64748b",
-          ],
+          backgroundColor: backgroundColors,
         },
       ],
     },
@@ -97,6 +109,11 @@ function renderChart(labels, data) {
       maintainAspectRatio: false,
       plugins: {
         legend: { position: "bottom" },
+        tooltip: {
+          callbacks: {
+            label: (context) => ` ${formatCurrency(context.raw)}`,
+          },
+        },
       },
     },
   });
@@ -127,8 +144,8 @@ async function loadTransactions(days = "") {
       tr.className = "hover:bg-slate-50 transition";
       tr.innerHTML = `
         <td class="py-3 font-mono text-xs text-slate-500">${exp.date || "N/A"}</td>
-        <td class="py-3"><span class="px-2 py-1 rounded text-xs font-semibold bg-slate-100 text-slate-700">${exp.category}</span></td>
         <td class="py-3 font-medium text-slate-800">${exp.description}</td>
+        <td class="py-3"><span class="px-2 py-1 rounded text-xs font-semibold bg-slate-100 text-slate-700">${exp.category}</span></td>
         <td class="py-3 text-right font-bold text-slate-900">${formatCurrency(exp.amount)}</td>
         <td class="py-3 text-center">
           <button onclick="deleteExpense(${exp.id})" class="text-rose-500 hover:text-rose-700 font-medium text-xs px-2 py-1 rounded hover:bg-rose-50 transition">
