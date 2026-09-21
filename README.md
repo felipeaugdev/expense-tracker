@@ -1,4 +1,5 @@
 # Expense Tracker REST API & Dashboard
+![CI Status](https://github.com/felipeaugdev/expense-tracker/actions/workflows/ci.yml/badge.svg)
 
 A full-stack personal expense tracking application with real-time analytics. Built with Java 21, Spring Boot, MariaDB, Docker, and a modern Vanilla JS/Tailwind CSS dashboard.
 
