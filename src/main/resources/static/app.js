@@ -13,7 +13,94 @@ const CATEGORY_COLORS = {
   OTHER: "#64748b",
 };
 
+const TRANSLATIONS = {
+  en: {
+    title: "Expense Tracker",
+    subtitle: "Personal spending analytics and history",
+    apiConnected: "API Connected",
+    currentMonth: "Current Month",
+    previousMonth: "Previous Month",
+    vsLastMonth: "vs. Last Month",
+    addExpense: "Add Expense",
+    amountLabel: "Amount",
+    categoryLabel: "Category",
+    descriptionLabel: "Description",
+    descriptionPlaceholder: "e.g. Groceries",
+    saveExpense: "Save Expense",
+    spendingByCategory: "Spending by Category",
+    recentTransactions: "Recent Transactions",
+    filterAllTime: "All Time",
+    filter7Days: "Last 7 Days",
+    filter14Days: "Last 14 Days",
+    filter30Days: "Last 30 Days",
+    thDate: "Date",
+    thDescription: "Description",
+    thCategory: "Category",
+    thAmount: "Amount",
+    thAction: "Action",
+    noTransactions: "No transactions found",
+    deleteBtn: "Delete",
+    deleteConfirm: "Are you sure you want to delete this expense?",
+    categories: {
+      FOOD: "Food",
+      TRANSPORTATION: "Transportation",
+      UTILITIES: "Utilities",
+      HOUSING: "Housing",
+      ENTERTAINMENT: "Entertainment",
+      HEALTHCARE: "Healthcare",
+      SHOPPING: "Shopping",
+      OTHER: "Other",
+    },
+  },
+  pt: {
+    title: "Controle de Despesas",
+    subtitle: "Análise e histórico de gastos pessoais",
+    apiConnected: "API Conectada",
+    currentMonth: "Mês Atual",
+    previousMonth: "Mês Anterior",
+    vsLastMonth: "vs. Mês Anterior",
+    addExpense: "Adicionar Despesa",
+    amountLabel: "Valor",
+    categoryLabel: "Categoria",
+    descriptionLabel: "Descrição",
+    descriptionPlaceholder: "ex: Supermercado",
+    saveExpense: "Salvar Despesa",
+    spendingByCategory: "Gastos por Categoria",
+    recentTransactions: "Transações Recentes",
+    filterAllTime: "Todo o período",
+    filter7Days: "Últimos 7 dias",
+    filter14Days: "Últimos 14 dias",
+    filter30Days: "Últimos 30 dias",
+    thDate: "Data",
+    thDescription: "Descrição",
+    thCategory: "Categoria",
+    thAmount: "Valor",
+    thAction: "Ação",
+    noTransactions: "Nenhuma transação encontrada",
+    deleteBtn: "Excluir",
+    deleteConfirm: "Tem certeza de que deseja excluir esta despesa?",
+    categories: {
+      FOOD: "Alimentação",
+      TRANSPORTATION: "Transporte",
+      UTILITIES: "Contas / Serviços",
+      HOUSING: "Moradia",
+      ENTERTAINMENT: "Lazer",
+      HEALTHCARE: "Saúde",
+      SHOPPING: "Compras",
+      OTHER: "Outros",
+    },
+  },
+};
+
+let currentCurrency = localStorage.getItem("preferred_currency") || "USD";
+let currentLang = localStorage.getItem("preferred_lang") || "en";
+if (!TRANSLATIONS[currentLang]) {
+  currentLang = "en";
+}
+
 document.addEventListener("DOMContentLoaded", () => {
+  setupSettingsUI();
+  applyLanguage();
   initDashboard();
 
   document
@@ -26,6 +113,54 @@ document.addEventListener("DOMContentLoaded", () => {
     loadCategoryTotals(days);
   });
 });
+
+function setupSettingsUI() {
+  const currencySelect = document.getElementById("currency-select");
+  const langSelect = document.getElementById("language-select");
+
+  currencySelect.value = currentCurrency;
+  langSelect.value = currentLang;
+
+  currencySelect.addEventListener("change", (e) => {
+    currentCurrency = e.target.value;
+    localStorage.setItem("preferred_currency", currentCurrency);
+    initDashboard();
+  });
+
+  langSelect.addEventListener("change", (e) => {
+    currentLang = e.target.value;
+    localStorage.setItem("preferred_lang", currentLang);
+    applyLanguage();
+    initDashboard();
+  });
+}
+
+function applyLanguage() {
+  document.documentElement.lang = currentLang;
+
+  const dict = TRANSLATIONS[currentLang];
+
+  document.querySelectorAll("[data-i18n]").forEach((elem) => {
+    const key = elem.getAttribute("data-i18n");
+    if (dict[key]) {
+      elem.innerText = dict[key];
+    }
+  });
+
+  const descInput = document.getElementById("description");
+  if (descInput) {
+    descInput.placeholder = dict.descriptionPlaceholder;
+  }
+
+  const categorySelect = document.getElementById("category");
+  if (categorySelect) {
+    Array.from(categorySelect.options).forEach((opt) => {
+      if (dict.categories[opt.value]) {
+        opt.text = dict.categories[opt.value];
+      }
+    });
+  }
+}
 
 async function initDashboard() {
   const currentDays = document.getElementById("filter-days").value;
@@ -89,6 +224,11 @@ function renderChart(labels, data) {
     categoryChart.destroy();
   }
 
+  const dict = TRANSLATIONS[currentLang];
+  const translatedLabels = labels.map(
+    (key) => dict.categories[key.toUpperCase()] || key,
+  );
+
   const backgroundColors = labels.map(
     (label) => CATEGORY_COLORS[label.toUpperCase()] || "#94a3b8",
   );
@@ -96,7 +236,7 @@ function renderChart(labels, data) {
   categoryChart = new Chart(ctx, {
     type: "doughnut",
     data: {
-      labels: labels.map((l) => l.charAt(0) + l.slice(1).toLowerCase()),
+      labels: translatedLabels,
       datasets: [
         {
           data: data,
@@ -127,12 +267,13 @@ async function loadTransactions(days = "") {
     const expenses = await response.json();
 
     const tbody = document.getElementById("expense-table-body");
+    const dict = TRANSLATIONS[currentLang];
     tbody.innerHTML = "";
 
     if (expenses.length === 0) {
       tbody.innerHTML = `
         <tr>
-            <td colspan="5" class="py-4 text-center text-slate-400">No transactions found</td>
+            <td colspan="5" class="py-4 text-center text-slate-400">${dict.noTransactions}</td>
         </tr>`;
       return;
     }
@@ -142,14 +283,16 @@ async function loadTransactions(days = "") {
     reversedExpenses.forEach((exp) => {
       const tr = document.createElement("tr");
       tr.className = "hover:bg-slate-50 transition";
+      const localizedCategory = dict.categories[exp.category] || exp.category;
+
       tr.innerHTML = `
         <td class="py-3 font-mono text-xs text-slate-500">${exp.date || "N/A"}</td>
         <td class="py-3 font-medium text-slate-800">${exp.description}</td>
-        <td class="py-3"><span class="px-2 py-1 rounded text-xs font-semibold bg-slate-100 text-slate-700">${exp.category}</span></td>
+        <td class="py-3"><span class="px-2 py-1 rounded text-xs font-semibold bg-slate-100 text-slate-700">${localizedCategory}</span></td>
         <td class="py-3 text-right font-bold text-slate-900">${formatCurrency(exp.amount)}</td>
         <td class="py-3 text-center">
           <button onclick="deleteExpense(${exp.id})" class="text-rose-500 hover:text-rose-700 font-medium text-xs px-2 py-1 rounded hover:bg-rose-50 transition">
-            Delete
+            ${dict.deleteBtn}
           </button>
         </td>
       `;
@@ -184,7 +327,8 @@ async function handleAddExpense(e) {
 }
 
 async function deleteExpense(id) {
-  if (!confirm("Are you sure you want to delete this expense?")) return;
+  const dict = TRANSLATIONS[currentLang];
+  if (!confirm(dict.deleteConfirm)) return;
 
   try {
     const response = await fetch(`${API_BASE_URL}/${id}`, {
@@ -200,8 +344,9 @@ async function deleteExpense(id) {
 }
 
 function formatCurrency(amount) {
-  return new Intl.NumberFormat("en-US", {
+  const locale = currentCurrency === "BRL" ? "pt-BR" : "en-US";
+  return new Intl.NumberFormat(locale, {
     style: "currency",
-    currency: "USD",
+    currency: currentCurrency,
   }).format(amount);
 }
