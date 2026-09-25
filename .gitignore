@@ -19,3 +19,6 @@ thumbs.db
 
 # Maven generated directory
 /target/
+
+# For local development
+docker-compose.override.yml
