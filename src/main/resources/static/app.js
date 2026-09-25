@@ -98,7 +98,15 @@ if (!TRANSLATIONS[currentLang]) {
   currentLang = "en";
 }
 
+let currentTheme = localStorage.getItem("preferred_theme");
+if (!currentTheme) {
+  currentTheme = window.matchMedia("(prefers-color-scheme: dark)").matches
+    ? "dark"
+    : "light";
+}
+
 document.addEventListener("DOMContentLoaded", () => {
+  applyTheme();
   setupSettingsUI();
   applyLanguage();
   initDashboard();
@@ -117,6 +125,7 @@ document.addEventListener("DOMContentLoaded", () => {
 function setupSettingsUI() {
   const currencySelect = document.getElementById("currency-select");
   const langSelect = document.getElementById("language-select");
+  const themeToggleBtn = document.getElementById("theme-toggle");
 
   currencySelect.value = currentCurrency;
   langSelect.value = currentLang;
@@ -133,6 +142,28 @@ function setupSettingsUI() {
     applyLanguage();
     initDashboard();
   });
+
+  if (themeToggleBtn) {
+    themeToggleBtn.addEventListener("click", () => {
+      currentTheme = currentTheme === "dark" ? "light" : "dark";
+      localStorage.setItem("preferred_theme", currentTheme);
+      applyTheme();
+
+      const currentDays = document.getElementById("filter-days").value;
+      loadCategoryTotals(currentDays);
+    });
+  }
+}
+
+function applyTheme() {
+  const iconElem = document.getElementById("theme-toggle-icon");
+  if (currentTheme === "dark") {
+    document.documentElement.classList.add("dark");
+    if (iconElem) iconElem.textContent = "☀️";
+  } else {
+    document.documentElement.classList.remove("dark");
+    if (iconElem) iconElem.textContent = "🌙";
+  }
 }
 
 function applyLanguage() {
@@ -187,9 +218,9 @@ async function loadMonthlyReport() {
     const variance = report.percentageChange ?? 0;
     const varianceElem = document.getElementById("month-variance");
 
-    let varianceColor = "text-slate-500";
-    if (variance > 0) varianceColor = "text-amber-600";
-    if (variance < 0) varianceColor = "text-emerald-600";
+    let varianceColor = "text-slate-500 dark:text-slate-400";
+    if (variance > 0) varianceColor = "text-amber-600 dark:text-amber-400";
+    if (variance < 0) varianceColor = "text-emerald-600 dark:text-emerald-400";
     const sign = variance > 0 ? "+" : "";
 
     varianceElem.innerText = `${sign}${variance.toFixed(1)}%`;
@@ -224,6 +255,10 @@ function renderChart(labels, data) {
     categoryChart.destroy();
   }
 
+  const isDark = currentTheme === "dark";
+  const legendTextColor = isDark ? "#cbd5e1" : "#475569";
+  const sliceBorderColor = isDark ? "#1e293b" : "#ffffff";
+
   const dict = TRANSLATIONS[currentLang];
   const translatedLabels = labels.map(
     (key) => dict.categories[key.toUpperCase()] || key,
@@ -241,6 +276,8 @@ function renderChart(labels, data) {
         {
           data: data,
           backgroundColor: backgroundColors,
+          borderColor: sliceBorderColor,
+          borderWidth: 2,
         },
       ],
     },
@@ -248,8 +285,22 @@ function renderChart(labels, data) {
       responsive: true,
       maintainAspectRatio: false,
       plugins: {
-        legend: { position: "bottom" },
+        legend: {
+          position: "bottom",
+          labels: {
+            color: legendTextColor,
+            padding: 16,
+            usePointStyle: true,
+            pointStyle: "circle",
+          },
+        },
         tooltip: {
+          backgroundColor: isDark ? "#0f172a" : "#ffffff",
+          titleColor: isDark ? "#f8fafc" : "#0f172a",
+          bodyColor: isDark ? "#e2e8f0" : "#334155",
+          borderColor: isDark ? "#334155" : "#e2e8f0",
+          borderWidth: 1,
+          padding: 10,
           callbacks: {
             label: (context) => ` ${formatCurrency(context.raw)}`,
           },
@@ -273,7 +324,7 @@ async function loadTransactions(days = "") {
     if (expenses.length === 0) {
       tbody.innerHTML = `
         <tr>
-            <td colspan="5" class="py-4 text-center text-slate-400">${dict.noTransactions}</td>
+            <td colspan="5" class="py-4 text-center text-slate-400 dark:text-slate-500">${dict.noTransactions}</td>
         </tr>`;
       return;
     }
@@ -282,16 +333,16 @@ async function loadTransactions(days = "") {
 
     reversedExpenses.forEach((exp) => {
       const tr = document.createElement("tr");
-      tr.className = "hover:bg-slate-50 transition";
+      tr.className = "hover:bg-slate-50 dark:hover:bg-slate-700/50 transition";
       const localizedCategory = dict.categories[exp.category] || exp.category;
 
       tr.innerHTML = `
-        <td class="py-3 font-mono text-xs text-slate-500">${exp.date || "N/A"}</td>
-        <td class="py-3 font-medium text-slate-800">${exp.description}</td>
-        <td class="py-3"><span class="px-2 py-1 rounded text-xs font-semibold bg-slate-100 text-slate-700">${localizedCategory}</span></td>
-        <td class="py-3 text-right font-bold text-slate-900">${formatCurrency(exp.amount)}</td>
+        <td class="py-3 font-mono text-xs text-slate-500 dark:text-slate-400">${exp.date || "N/A"}</td>
+        <td class="py-3 font-medium text-slate-800 dark:text-slate-200">${exp.description}</td>
+        <td class="py-3"><span class="px-2 py-1 rounded text-xs font-semibold bg-slate-100 dark:bg-slate-700 text-slate-700 dark:text-slate-300">${localizedCategory}</span></td>
+        <td class="py-3 text-right font-bold text-slate-900 dark:text-slate-100">${formatCurrency(exp.amount)}</td>
         <td class="py-3 text-center">
-          <button onclick="deleteExpense(${exp.id})" class="text-rose-500 hover:text-rose-700 font-medium text-xs px-2 py-1 rounded hover:bg-rose-50 transition">
+          <button onclick="deleteExpense(${exp.id})" class="text-rose-500 hover:text-rose-700 dark:text-rose-400 dark:hover:text-rose-300 font-medium text-xs px-2 py-1 rounded hover:bg-rose-50 dark:hover:bg-rose-950/40 transition">
             ${dict.deleteBtn}
           </button>
         </td>
