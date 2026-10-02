@@ -27,7 +27,7 @@ public class ExpenseServiceTest {
     @Test
     @SuppressWarnings("null")
     void testAddExpenseSavesAndReturnsExpense() {
-        Expense sample = new Expense(1, new BigDecimal("5.50"), LocalDate.now(), "Coffee", "FOOD");
+        Expense sample = new Expense(new BigDecimal("5.50"), LocalDate.now(), "Coffee", "FOOD");
         when(repository.save(any(Expense.class))).thenReturn(sample);
 
         Expense created = service.addExpense(new BigDecimal("5.50"), "Coffee", "FOOD");
@@ -40,8 +40,8 @@ public class ExpenseServiceTest {
 
     @Test
     void testCalculateTotalExpenses() {
-        Expense e1 = new Expense(1, new BigDecimal("10.00"), LocalDate.now(), "Lunch", "FOOD");
-        Expense e2 = new Expense(1, new BigDecimal("20.00"), LocalDate.now(), "Bus Pass", "TRANSPORTATION");
+        Expense e1 = new Expense(new BigDecimal("10.00"), LocalDate.now(), "Lunch", "FOOD");
+        Expense e2 = new Expense(new BigDecimal("20.00"), LocalDate.now(), "Bus Pass", "TRANSPORTATION");
         when(repository.findAll()).thenReturn(List.of(e1, e2));
 
         BigDecimal total = service.getTotalExpenses(0);
@@ -90,8 +90,8 @@ public class ExpenseServiceTest {
 
     @Test
     void testDateRangeFilteringAllTime() {
-        Expense e1 = new Expense(1, new BigDecimal("25.00"), LocalDate.now(), "Movie Ticket", "ENTERTAINMENT");
-        Expense e2 = new Expense(2, new BigDecimal("12.00"), LocalDate.now(), "Lunch", "FOOD");
+        Expense e1 = new Expense(new BigDecimal("25.00"), LocalDate.now(), "Movie Ticket", "ENTERTAINMENT");
+        Expense e2 = new Expense(new BigDecimal("12.00"), LocalDate.now(), "Lunch", "FOOD");
         when(repository.findAll()).thenReturn(List.of(e1, e2));
 
         List<Expense> result = service.getExpensesByDateRange(0);

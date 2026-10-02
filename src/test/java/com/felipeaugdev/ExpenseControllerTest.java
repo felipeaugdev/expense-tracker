@@ -5,11 +5,15 @@ import java.time.LocalDate;
 import java.util.List;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.felipeaugdev.security.JwtUtils;
+
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.http.MediaType;
+import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.test.web.servlet.MockMvc;
 
 import static org.mockito.ArgumentMatchers.any;
@@ -19,6 +23,7 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
 @WebMvcTest(ExpenseController.class)
+@AutoConfigureMockMvc(addFilters = false)
 class ExpenseControllerTest {
 
     @Autowired
@@ -30,9 +35,15 @@ class ExpenseControllerTest {
     @MockBean
     private ExpenseService expenseService;
 
+    @MockBean
+    private JwtUtils jwtUtils;
+
+    @MockBean
+    private UserDetailsService userDetailsService;
+
     @Test
     void testGetExpensesReturnsJsonList() throws Exception {
-        Expense expense = new Expense(1, new BigDecimal("15.00"), LocalDate.now(), "Coffee", "FOOD");
+        Expense expense = new Expense(new BigDecimal("15.00"), LocalDate.now(), "Coffee", "FOOD");
         when(expenseService.getExpensesByDateRange(0)).thenReturn(List.of(expense));
 
         mockMvc.perform(get("/api/expenses"))
@@ -44,7 +55,7 @@ class ExpenseControllerTest {
     @Test
     @SuppressWarnings("null")
     void testAddExpenseReturnsCreatedStatus() throws Exception {
-        Expense expense = new Expense(1, new BigDecimal("25.50"), LocalDate.now(), "Dinner", "FOOD");
+        Expense expense = new Expense(new BigDecimal("25.50"), LocalDate.now(), "Dinner", "FOOD");
         when(expenseService.addExpense(any(BigDecimal.class), eq("Dinner"), eq("FOOD")))
                 .thenReturn(expense);
 
