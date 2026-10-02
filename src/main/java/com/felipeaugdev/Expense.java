@@ -25,6 +25,10 @@ public class Expense {
     @Column(nullable = false)
     private String category;
 
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "user_id", nullable = true)
+    private User user;
+
     // --- CONSTRUCTORS ---
 
     public Expense() {
@@ -35,14 +39,24 @@ public class Expense {
         this.date = date;
         this.description = description;
         this.category = category;
+        this.user = null;
     }
 
-    public Expense(Integer id, BigDecimal amount, LocalDate date, String description, String category) {
+    public Expense(BigDecimal amount, LocalDate date, String description, String category, User user) {
+        this.amount = amount;
+        this.date = date;
+        this.description = description;
+        this.category = category;
+        this.user = user;
+    }
+
+    public Expense(Integer id, BigDecimal amount, LocalDate date, String description, String category, User user) {
         this.id = id;
         this.amount = amount;
         this.date = date;
         this.description = description;
         this.category = category;
+        this.user = user;
     }
 
     // --- GETTERS AND SETTERS ---
@@ -84,6 +98,14 @@ public class Expense {
 
     public void setCategory(String category) {
         this.category = category;
+    }
+
+    public User getUser() {
+        return user;
+    }
+
+    public void setUser(User user) {
+        this.user = user;
     }
 
 }
