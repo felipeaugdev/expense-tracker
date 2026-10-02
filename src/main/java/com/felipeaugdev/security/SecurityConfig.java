@@ -34,6 +34,18 @@ public class SecurityConfig {
                         .requestMatchers(HttpMethod.GET, "/api/expenses/**").permitAll()
                         .requestMatchers(HttpMethod.POST, "/api/expenses").permitAll()
                         .requestMatchers(HttpMethod.DELETE, "/api/expenses/**").permitAll()
+
+                        // Static frontend
+                        .requestMatchers("/", "/index.html", "/app.js", "/favicon.ico").permitAll()
+
+                        // Swagger
+                        .requestMatchers(
+                                "/swagger-ui/**",
+                                "/swagger-ui.html",
+                                "/v3/api-docs/**",
+                                "/v3/api-docs.yaml")
+                        .permitAll()
+
                         // Everything else (requires authentication)
                         .anyRequest().authenticated())
                 .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
