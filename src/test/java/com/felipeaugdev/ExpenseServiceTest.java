@@ -30,7 +30,7 @@ public class ExpenseServiceTest {
         Expense sample = new Expense(new BigDecimal("5.50"), LocalDate.now(), "Coffee", "FOOD");
         when(repository.save(any(Expense.class))).thenReturn(sample);
 
-        Expense created = service.addExpense(new BigDecimal("5.50"), "Coffee", "FOOD");
+        Expense created = service.addExpense(new BigDecimal("5.50"), "Coffee", "FOOD", null);
 
         assertNotNull(created);
         assertEquals("Coffee", created.getDescription());
@@ -44,7 +44,7 @@ public class ExpenseServiceTest {
         Expense e2 = new Expense(new BigDecimal("20.00"), LocalDate.now(), "Bus Pass", "TRANSPORTATION");
         when(repository.findAll()).thenReturn(List.of(e1, e2));
 
-        BigDecimal total = service.getTotalExpenses(0);
+        BigDecimal total = service.getTotalExpenses(0, null);
 
         assertEquals(new BigDecimal("30.00"), total);
     }
@@ -53,7 +53,7 @@ public class ExpenseServiceTest {
     void testDeleteExistingExpenseReturnsTrue() {
         when(repository.existsById(1)).thenReturn(true);
 
-        boolean deleted = service.deleteExpense(1);
+        boolean deleted = service.deleteExpense(1, null);
 
         assertTrue(deleted);
         verify(repository, times(1)).deleteById(1);
@@ -63,7 +63,7 @@ public class ExpenseServiceTest {
     void testDeleteNonExistentExpenseReturnsFalse() {
         when(repository.existsById(999)).thenReturn(false);
 
-        boolean deleted = service.deleteExpense(999);
+        boolean deleted = service.deleteExpense(999, null);
 
         assertFalse(deleted);
         verify(repository, never()).deleteById(anyInt());
@@ -73,7 +73,7 @@ public class ExpenseServiceTest {
     void testMonthOverMonthReportWithZeroPreviousMonth() {
         when(repository.findAll()).thenReturn(new ArrayList<>());
 
-        MonthOverMonthReport report = service.getMonthOverMonthReport();
+        MonthOverMonthReport report = service.getMonthOverMonthReport(null);
 
         assertEquals(new BigDecimal("0"), report.getPreviousTotal());
         assertEquals(new BigDecimal("0"), report.getPercentageChange());
@@ -83,7 +83,7 @@ public class ExpenseServiceTest {
     void testCategoryAggregationForEmptyExpenses() {
         when(repository.findAll()).thenReturn(new ArrayList<>());
 
-        var categoryTotals = service.getTotalExpensesByCategory(0);
+        var categoryTotals = service.getTotalExpensesByCategory(0, null);
 
         assertTrue(categoryTotals.isEmpty());
     }
@@ -94,7 +94,7 @@ public class ExpenseServiceTest {
         Expense e2 = new Expense(new BigDecimal("12.00"), LocalDate.now(), "Lunch", "FOOD");
         when(repository.findAll()).thenReturn(List.of(e1, e2));
 
-        List<Expense> result = service.getExpensesByDateRange(0);
+        List<Expense> result = service.getExpensesByDateRange(0, null);
 
         assertEquals(2, result.size());
     }

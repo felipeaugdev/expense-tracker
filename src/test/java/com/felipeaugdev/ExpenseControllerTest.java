@@ -44,7 +44,7 @@ class ExpenseControllerTest {
     @Test
     void testGetExpensesReturnsJsonList() throws Exception {
         Expense expense = new Expense(new BigDecimal("15.00"), LocalDate.now(), "Coffee", "FOOD");
-        when(expenseService.getExpensesByDateRange(0)).thenReturn(List.of(expense));
+        when(expenseService.getExpensesByDateRange(eq(0), any())).thenReturn(List.of(expense));
 
         mockMvc.perform(get("/api/expenses"))
                 .andExpect(status().isOk())
@@ -56,7 +56,7 @@ class ExpenseControllerTest {
     @SuppressWarnings("null")
     void testAddExpenseReturnsCreatedStatus() throws Exception {
         Expense expense = new Expense(new BigDecimal("25.50"), LocalDate.now(), "Dinner", "FOOD");
-        when(expenseService.addExpense(any(BigDecimal.class), eq("Dinner"), eq("FOOD")))
+        when(expenseService.addExpense(any(BigDecimal.class), eq("Dinner"), eq("FOOD"), any()))
                 .thenReturn(expense);
 
         mockMvc.perform(post("/api/expenses")
@@ -68,7 +68,7 @@ class ExpenseControllerTest {
 
     @Test
     void testDeleteExpenseExistingReturnsNoContent() throws Exception {
-        when(expenseService.deleteExpense(1)).thenReturn(true);
+        when(expenseService.deleteExpense(eq(1), any())).thenReturn(true);
 
         mockMvc.perform(delete("/api/expenses/1"))
                 .andExpect(status().isNoContent());
@@ -76,7 +76,7 @@ class ExpenseControllerTest {
 
     @Test
     void testDeleteExpenseNotFoundReturns404() throws Exception {
-        when(expenseService.deleteExpense(999)).thenReturn(false);
+        when(expenseService.deleteExpense(eq(999), any())).thenReturn(false);
 
         mockMvc.perform(delete("/api/expenses/999"))
                 .andExpect(status().isNotFound());
