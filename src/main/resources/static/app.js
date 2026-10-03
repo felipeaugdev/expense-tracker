@@ -51,6 +51,18 @@ const TRANSLATIONS = {
       SHOPPING: "Shopping",
       OTHER: "Other",
     },
+    login: "Log In",
+    register: "Register",
+    usernameLabel: "Username",
+    passwordLabel: "Password",
+    loginButton: "Log In",
+    registerButton: "Register",
+    authButton: "Log In / Register",
+    logoutSuffix: "(Logout)",
+    accountCreated: "Account created! Please log in.",
+    invalidCredentials: "Invalid username or password",
+    usernameTaken: "Username is already taken",
+    registrationFailed: "Registration failed",
   },
   pt: {
     title: "Controle de Despesas",
@@ -89,6 +101,18 @@ const TRANSLATIONS = {
       SHOPPING: "Compras",
       OTHER: "Outros",
     },
+    login: "Entrar",
+    register: "Registrar",
+    usernameLabel: "Nome de usuário",
+    passwordLabel: "Senha",
+    loginButton: "Entrar",
+    registerButton: "Registrar",
+    authButton: "Entrar / Registrar",
+    logoutSuffix: "(Sair)",
+    accountCreated: "Conta criada! Por favor, faça login.",
+    invalidCredentials: "Usuário ou senha inválidos",
+    usernameTaken: "Nome de usuário já está em uso",
+    registrationFailed: "Falha ao criar conta",
   },
 };
 
@@ -226,6 +250,8 @@ function applyLanguage() {
       }
     });
   }
+
+  updateAuthUI();
 }
 
 function getAuthHeaders() {
@@ -460,12 +486,14 @@ function updateAuthUI() {
   const authButton = document.getElementById("auth-button");
   if (!authButton) return;
 
-  if (authButton && currentUser) {
-    authButton.textContent = `${currentUser} (Logout)`;
+  const dict = TRANSLATIONS[currentLang];
+
+  if (authToken && currentUser) {
+    authButton.textContent = `${currentUser} ${dict.logoutSuffix}`;
     authButton.classList.remove("bg-indigo-600", "hover:bg-indigo-700");
     authButton.classList.add("bg-slate-600", "hover:bg-slate-700");
   } else {
-    authButton.textContent = "Log In / Register";
+    authButton.textContent = dict.authButton;
     authButton.classList.remove(
       "bg-slate-600",
       "hover:bg-slate-700",
@@ -496,6 +524,7 @@ function switchAuthTab(tab) {
   const registerTab = document.getElementById("tab-register");
   const title = document.getElementById("auth-modal-title");
   const submitBtn = document.getElementById("auth-submit");
+  const dict = TRANSLATIONS[currentLang];
 
   if (tab === "login") {
     loginTab.classList.add(
@@ -514,8 +543,8 @@ function switchAuthTab(tab) {
       "dark:border-indigo-400",
     );
     registerTab.classList.add("text-slate-500", "dark:text-slate-400");
-    title.textContent = "Log In";
-    submitBtn.textContent = "Log In";
+    title.textContent = dict.login;
+    submitBtn.textContent = dict.loginButton;
   } else {
     registerTab.classList.add(
       "text-indigo-600",
@@ -533,8 +562,8 @@ function switchAuthTab(tab) {
       "dark:border-indigo-400",
     );
     loginTab.classList.add("text-slate-500", "dark:text-slate-400");
-    title.textContent = "Register";
-    submitBtn.textContent = "Register";
+    title.textContent = dict.register;
+    submitBtn.textContent = dict.registerButton;
   }
 }
 
@@ -544,8 +573,9 @@ async function handleAuthSubmit(e) {
   const username = document.getElementById("auth-username").value.trim();
   const password = document.getElementById("auth-password").value;
   const errorElem = document.getElementById("auth-error");
+  const dict = TRANSLATIONS[currentLang];
   const isLogin =
-    document.getElementById("auth-modal-title").textContent === "Log In";
+    document.getElementById("auth-modal-title").textContent === dict.login;
 
   errorElem.classList.add("hidden");
 
@@ -559,7 +589,7 @@ async function handleAuthSubmit(e) {
       });
 
       if (!response.ok) {
-        throw new Error("Invalid username or password");
+        throw new Error(dict.invalidCredentials);
       }
 
       const data = await response.json();
@@ -581,14 +611,14 @@ async function handleAuthSubmit(e) {
       });
 
       if (response.status === 409) {
-        throw new Error("Username is already taken");
+        throw new Error(dict.usernameTaken);
       }
       if (!response.ok) {
-        throw new Error("Registration failed");
+        throw new Error(dict.registrationFailed);
       }
 
       switchAuthTab("login");
-      errorElem.textContent = "Account created! Please log in.";
+      errorElem.textContent = dict.accountCreated;
       errorElem.classList.remove("hidden");
       errorElem.classList.remove("text-rose-600", "dark:text-rose-400");
       errorElem.classList.add("text-emerald-600", "dark:text-emerald-400");
