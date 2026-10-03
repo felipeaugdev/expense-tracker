@@ -462,18 +462,8 @@ function updateAuthUI() {
 
   if (authButton && currentUser) {
     authButton.textContent = `${currentUser} (Logout)`;
-    authButton.classList.remove(
-      "bg-indigo-600",
-      "hover:bg-indigo-700",
-      "dark:bg-indigo-500",
-      "dark:hover:bg-indigo-600",
-    );
-    authButton.classList.add(
-      "bg-slate-600",
-      "hover:bg-slate-700",
-      "dark:bg-slate-500",
-      "dark:hover:bg-slate-600",
-    );
+    authButton.classList.remove("bg-indigo-600", "hover:bg-indigo-700");
+    authButton.classList.add("bg-slate-600", "hover:bg-slate-700");
   } else {
     authButton.textContent = "Log In / Register";
     authButton.classList.remove(
@@ -482,12 +472,7 @@ function updateAuthUI() {
       "dark:bg-slate-500",
       "dark:hover:bg-slate-600",
     );
-    authButton.classList.add(
-      "bg-indigo-600",
-      "hover:bg-indigo-700",
-      "dark:bg-indigo-500",
-      "dark:hover:bg-indigo-600",
-    );
+    authButton.classList.add("bg-indigo-600", "hover:bg-indigo-700");
   }
 }
 
