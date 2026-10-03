@@ -105,6 +105,9 @@ if (!currentTheme) {
     : "light";
 }
 
+let authToken = localStorage.getItem("jwt_token") || null;
+let currentUser = localStorage.getItem("current_user") || null;
+
 document.addEventListener("DOMContentLoaded", () => {
   applyTheme();
   setupSettingsUI();
@@ -120,6 +123,38 @@ document.addEventListener("DOMContentLoaded", () => {
     loadTransactions(days);
     loadCategoryTotals(days);
   });
+
+  const authButton = document.getElementById("auth-button");
+  if (authButton) {
+    authButton.addEventListener("click", () => {
+      if (authToken) {
+        logout();
+      } else {
+        openAuthModal();
+      }
+    });
+  }
+
+  document
+    .getElementById("auth-modal-close")
+    ?.addEventListener("click", closeAuthModal);
+
+  document.getElementById("auth-modal")?.addEventListener("click", (e) => {
+    if (e.target.id === "auth-modal") closeAuthModal();
+  });
+
+  document
+    .getElementById("tab-login")
+    ?.addEventListener("click", () => switchAuthTab("login"));
+  document
+    .getElementById("tab-register")
+    ?.addEventListener("click", () => switchAuthTab("register"));
+
+  document
+    .getElementById("auth-form")
+    ?.addEventListener("submit", handleAuthSubmit);
+
+  updateAuthUI();
 });
 
 function setupSettingsUI() {
@@ -193,6 +228,14 @@ function applyLanguage() {
   }
 }
 
+function getAuthHeaders() {
+  const headers = { "Content-Type": "application/json" };
+  if (authToken) {
+    headers["Authorization"] = `Bearer ${authToken}`;
+  }
+  return headers;
+}
+
 async function initDashboard() {
   const currentDays = document.getElementById("filter-days").value;
   await Promise.all([
@@ -204,7 +247,9 @@ async function initDashboard() {
 
 async function loadMonthlyReport() {
   try {
-    const response = await fetch(`${API_BASE_URL}/monthly-report`);
+    const response = await fetch(`${API_BASE_URL}/monthly-report`, {
+      headers: getAuthHeaders(),
+    });
     if (!response.ok) throw new Error("Failed to fetch monthly report");
     const report = await response.json();
 
@@ -235,7 +280,9 @@ async function loadCategoryTotals(days = "") {
     const url = days
       ? `${API_BASE_URL}/category-totals?days=${days}`
       : `${API_BASE_URL}/category-totals`;
-    const response = await fetch(url);
+    const response = await fetch(url, {
+      headers: getAuthHeaders(),
+    });
     if (!response.ok) throw new Error("Failed to fetch category totals");
     const totals = await response.json();
 
@@ -313,7 +360,9 @@ function renderChart(labels, data) {
 async function loadTransactions(days = "") {
   try {
     const url = days ? `${API_BASE_URL}?days=${days}` : API_BASE_URL;
-    const response = await fetch(url);
+    const response = await fetch(url, {
+      headers: getAuthHeaders(),
+    });
     if (!response.ok) throw new Error("Failed to fetch transactions");
     const expenses = await response.json();
 
@@ -364,7 +413,7 @@ async function handleAddExpense(e) {
   try {
     const response = await fetch(API_BASE_URL, {
       method: "POST",
-      headers: { "Content-Type": "application/json" },
+      headers: getAuthHeaders(),
       body: JSON.stringify({ amount, category, description }),
     });
 
@@ -384,6 +433,7 @@ async function deleteExpense(id) {
   try {
     const response = await fetch(`${API_BASE_URL}/${id}`, {
       method: "DELETE",
+      headers: getAuthHeaders(),
     });
 
     if (!response.ok) throw new Error("Failed to delete expense");
@@ -400,4 +450,177 @@ function formatCurrency(amount) {
     style: "currency",
     currency: currentCurrency,
   }).format(amount);
+}
+
+// =========================
+// Authentication UI & Logic
+// =========================
+
+function updateAuthUI() {
+  const authButton = document.getElementById("auth-button");
+  if (!authButton) return;
+
+  if (authButton && currentUser) {
+    authButton.textContent = `${currentUser} (Logout)`;
+    authButton.classList.remove(
+      "bg-indigo-600",
+      "hover:bg-indigo-700",
+      "dark:bg-indigo-500",
+      "dark:hover:bg-indigo-600",
+    );
+    authButton.classList.add(
+      "bg-slate-600",
+      "hover:bg-slate-700",
+      "dark:bg-slate-500",
+      "dark:hover:bg-slate-600",
+    );
+  } else {
+    authButton.textContent = "Log In / Register";
+    authButton.classList.remove(
+      "bg-slate-600",
+      "hover:bg-slate-700",
+      "dark:bg-slate-500",
+      "dark:hover:bg-slate-600",
+    );
+    authButton.classList.add(
+      "bg-indigo-600",
+      "hover:bg-indigo-700",
+      "dark:bg-indigo-500",
+      "dark:hover:bg-indigo-600",
+    );
+  }
+}
+
+function openAuthModal() {
+  const modal = document.getElementById("auth-modal");
+  modal.classList.remove("hidden");
+  modal.classList.add("flex");
+  document.getElementById("auth-error").classList.add("hidden");
+  document.getElementById("auth-form").reset();
+  switchAuthTab("login");
+}
+
+function closeAuthModal() {
+  const modal = document.getElementById("auth-modal");
+  modal.classList.add("hidden");
+  modal.classList.remove("flex");
+}
+
+function switchAuthTab(tab) {
+  const loginTab = document.getElementById("tab-login");
+  const registerTab = document.getElementById("tab-register");
+  const title = document.getElementById("auth-modal-title");
+  const submitBtn = document.getElementById("auth-submit");
+
+  if (tab === "login") {
+    loginTab.classList.add(
+      "text-indigo-600",
+      "dark:text-indigo-400",
+      "border-b-2",
+      "border-indigo-600",
+      "dark:border-indigo-400",
+    );
+    loginTab.classList.remove("text-slate-500", "dark:text-slate-400");
+    registerTab.classList.remove(
+      "text-indigo-600",
+      "dark:text-indigo-400",
+      "border-b-2",
+      "border-indigo-600",
+      "dark:border-indigo-400",
+    );
+    registerTab.classList.add("text-slate-500", "dark:text-slate-400");
+    title.textContent = "Log In";
+    submitBtn.textContent = "Log In";
+  } else {
+    registerTab.classList.add(
+      "text-indigo-600",
+      "dark:text-indigo-400",
+      "border-b-2",
+      "border-indigo-600",
+      "dark:border-indigo-400",
+    );
+    registerTab.classList.remove("text-slate-500", "dark:text-slate-400");
+    loginTab.classList.remove(
+      "text-indigo-600",
+      "dark:text-indigo-400",
+      "border-b-2",
+      "border-indigo-600",
+      "dark:border-indigo-400",
+    );
+    loginTab.classList.add("text-slate-500", "dark:text-slate-400");
+    title.textContent = "Register";
+    submitBtn.textContent = "Register";
+  }
+}
+
+async function handleAuthSubmit(e) {
+  e.preventDefault();
+
+  const username = document.getElementById("auth-username").value.trim();
+  const password = document.getElementById("auth-password").value;
+  const errorElem = document.getElementById("auth-error");
+  const isLogin =
+    document.getElementById("auth-modal-title").textContent === "Log In";
+
+  errorElem.classList.add("hidden");
+
+  try {
+    if (isLogin) {
+      // --- LOGIN ---
+      const response = await fetch("/api/auth/login", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ username, password }),
+      });
+
+      if (!response.ok) {
+        throw new Error("Invalid username or password");
+      }
+
+      const data = await response.json();
+      authToken = data.token;
+      currentUser = data.username;
+
+      localStorage.setItem("jwt_token", authToken);
+      localStorage.setItem("current_user", currentUser);
+
+      closeAuthModal();
+      updateAuthUI();
+      await initDashboard();
+    } else {
+      // --- REGISTER ---
+      const response = await fetch("/api/auth/register", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ username, password }),
+      });
+
+      if (response.status === 409) {
+        throw new Error("Username is already taken");
+      }
+      if (!response.ok) {
+        throw new Error("Registration failed");
+      }
+
+      switchAuthTab("login");
+      errorElem.textContent = "Account created! Please log in.";
+      errorElem.classList.remove("hidden");
+      errorElem.classList.remove("text-rose-600", "dark:text-rose-400");
+      errorElem.classList.add("text-emerald-600", "dark:text-emerald-400");
+    }
+  } catch (err) {
+    errorElem.textContent = err.message;
+    errorElem.classList.remove("hidden");
+    errorElem.classList.add("text-rose-600", "dark:text-rose-400");
+    errorElem.classList.remove("text-emerald-600", "dark:text-emerald-400");
+  }
+}
+
+function logout() {
+  authToken = null;
+  currentUser = null;
+  localStorage.removeItem("jwt_token");
+  localStorage.removeItem("current_user");
+  updateAuthUI();
+  initDashboard();
 }
