@@ -13,10 +13,13 @@ This expense tracker was built primarily with Java. It uses Spring Boot and JPA 
 
 ## Dev Log
 
+### [October 2–3, 2026] - Optional User Accounts & JWT Authentication
+* **What changed:** Added Spring Security + JJWT. Users can now optionally register and log in. Expenses are fully isolated per account while still allowing anonymous (guest) usage. Introduced an ExpenseResponse DTO for cleaner API responses.
+* **Why:** To demonstrate authentication, authorization, and multi-user data separation. This is good for shared machines, and it's also a staple of financial apps.
+
 ### [September 24, 2026] - UI Personalization & Dark Mode
 * **What changed:** Added a dark mode toggle (with OS system color scheme auto-detection and `localStorage` persistence), a multi-currency switcher (USD/BRL), and full localization for English and Portuguese. Updated Chart.js to match the active theme.
 * **Why:** Dark mode is important for accessibility, and currency/language switchers are crucial for localization, especially for banking/analytics apps.
-* **Future Plans:** Spring Security & JWT.
 
 ### [September 14–16, 2026] - Web UI Implementation
 * **What changed:** Added a visual interface that handles adding, deleting, viewing and filtering expenses.

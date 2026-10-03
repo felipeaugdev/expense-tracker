@@ -3,6 +3,17 @@
 
 A full-stack personal expense tracking application with real-time analytics. Built with Java 21, Spring Boot, MariaDB, Docker, and a modern Vanilla JS/Tailwind CSS dashboard.
 
+## Screenshots
+
+### Dashboard (Light Mode)
+![Dashboard Light](screenshots/dashboard-light.png)
+
+### Dashboard (Dark Mode)
+![Dashboard Dark](screenshots/dashboard-dark.png)
+
+### Authentication Modal
+![Auth Modal](screenshots/auth-modal.png)
+
 ## Features
 
 - **Web Dashboard:** Interactive single-page dashboard displaying real-time monthly metrics, spending category charts, and a transaction table.
@@ -11,11 +22,14 @@ A full-stack personal expense tracking application with real-time analytics. Bui
 - **Category Breakdown:** Aggregated spending totals grouped by expense category.
 - **Month-over-Month Reports:** Comparative analysis between current and previous calendar month spending.
 - **Dockerized Environment:** Multi-stage Docker build packaging both Spring Boot backend and MariaDB database via Docker Compose.
+- **Optional User Accounts:** Register / login with JWT authentication. Expenses are isolated per user while guest mode remains fully functional.
+- **Secure API:** Spring Security + JJWT protect authenticated endpoints while keeping public access for guests.
 - **API Documentation:** Interactive Swagger UI generated via SpringDoc OpenAPI.
 
 ## Tech Stack
 
-- **Language & Framework:** Java 21 LTS, Spring Boot 3.3 (Spring Web, Spring Data JPA)
+- **Language & Framework:** Java 21 LTS, Spring Boot 3.3 (Spring Web, Spring Data JPA, Spring Security)
+- **Authentication:** JWT (JJWT library)
 - **Frontend:** HTML5, Tailwind CSS (CDN), Vanilla JavaScript (ES6+), Chart.js
 - **Database:** MariaDB 11
 - **Build & Package:** Maven, Docker, Docker Compose
@@ -31,6 +45,12 @@ A full-stack personal expense tracking application with real-time analytics. Bui
 | `DELETE` | `/api/expenses/{id}` | Delete an expense by ID |
 | `GET` | `/api/expenses/category-totals` | Get spending aggregated by category |
 | `GET` | `/api/expenses/monthly-report` | Get month-over-month report metrics |
+
+### Authentication Endpoints
+| Method | Endpoint | Description |
+| :--- | :--- | :--- |
+| `POST` | `/api/auth/register` | Create a new user account |
+| `POST` | `/api/auth/login` | Obtain a JWT token |
 
 ## Getting Started
 
