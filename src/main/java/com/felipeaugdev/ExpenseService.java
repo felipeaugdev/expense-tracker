@@ -4,10 +4,10 @@ import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.time.LocalDate;
 import java.time.YearMonth;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
+import java.util.stream.Collectors;
 
 import org.springframework.stereotype.Service;
 
@@ -20,21 +20,25 @@ public class ExpenseService {
         this.repository = repository;
     }
 
-    public Expense addExpense(BigDecimal amount, String description, String category) {
-        Expense newExpense = new Expense(amount, LocalDate.now(), description, category);
+    public Expense addExpense(BigDecimal amount, String description, String category, User user) {
+        Expense newExpense = new Expense(amount, LocalDate.now(), description, category, user);
         return repository.save(newExpense);
     }
 
-    public List<Expense> getAllExpenses() {
-        return repository.findAll();
+    public List<Expense> getAllExpenses(User user) {
+        List<Expense> all = repository.findAll();
+        return filterByUser(all, user);
     }
 
-    public boolean deleteExpense(int id) {
-        if (repository.existsById(id)) {
-            repository.deleteById(id);
-            return true;
-        }
-        return false;
+    @SuppressWarnings("null")
+    public boolean deleteExpense(int id, User user) {
+        return repository.findById(id)
+                .filter(expense -> belongsToUser(expense, user))
+                .map(expense -> {
+                    repository.delete(expense);
+                    return true;
+                })
+                .orElse(false);
     }
 
     /**
@@ -43,18 +47,16 @@ public class ExpenseService {
      * @param days Number of days back to include (0 for All Time).
      * @return Map where the key is the category name and the value is the total amount.
      */
-    public Map<String, BigDecimal> getTotalExpensesByCategory(int days) {
-        List<Expense> filtered = getExpensesByDateRange(days);
+    @SuppressWarnings("null")
+    public Map<String, BigDecimal> getTotalExpensesByCategory(int days, User user) {
+        List<Expense> filtered = getExpensesByDateRange(days, user);
         Map<String, BigDecimal> categoryTotals = new TreeMap<>();
 
         for (Expense expense : filtered) {
             String category = expense.getCategory();
             BigDecimal amount = expense.getAmount();
-
-            BigDecimal currentTotal = categoryTotals.getOrDefault(category, BigDecimal.ZERO);
-            categoryTotals.put(category, currentTotal.add(amount));
+            categoryTotals.merge(category, amount, BigDecimal::add);
         }
-
         return categoryTotals;
     }
 
@@ -64,14 +66,11 @@ public class ExpenseService {
      * @param days Number of days back to include (0 for All Time).
      * @return BigDecimal total of all expenses within the time range.
      */
-    public BigDecimal getTotalExpenses(int days) {
-        List<Expense> filtered = getExpensesByDateRange(days);
-        BigDecimal total = BigDecimal.ZERO;
-
-        for (Expense expense : filtered) {
-            total = total.add(expense.getAmount());
-        }
-        return total;
+    @SuppressWarnings("null")
+    public BigDecimal getTotalExpenses(int days, User user) {
+        return getExpensesByDateRange(days, user).stream()
+                .map(Expense::getAmount)
+                .reduce(BigDecimal.ZERO, BigDecimal::add);
     }
 
     /**
@@ -80,50 +79,39 @@ public class ExpenseService {
      * @param days Number of days back to filter (7, 14, 30). Pass 0 for All Time.
      * @return List of matching Expense objects.
      */
-    public List<Expense> getExpensesByDateRange(int days) {
+    public List<Expense> getExpensesByDateRange(int days, User user) {
+        List<Expense> all = getAllExpenses(user);
+
         if (days <= 0) {
-            return getAllExpenses();
+            return all;
         }
 
         LocalDate cutoffDate = LocalDate.now().minusDays(days);
-        List<Expense> allExpenses = repository.findAll();
-        List<Expense> filteredExpenses = new ArrayList<>();
-
-        for (Expense expense : allExpenses) {
-            if (!expense.getDate().isBefore(cutoffDate)) {
-                filteredExpenses.add(expense);
-            }
-        }
-
-        return filteredExpenses;
+        return all.stream()
+                .filter(e -> !e.getDate().isBefore(cutoffDate))
+                .collect(Collectors.toList());
     }
 
     /**
      * Calculates total expenses for a specific calendar month.
      */
-    public BigDecimal getTotalExpensesForMonth(YearMonth yearMonth) {
-        BigDecimal total = BigDecimal.ZERO;
-        List<Expense> allExpenses = repository.findAll();
-
-        for (Expense expense : allExpenses) {
-            YearMonth expenseMonth = YearMonth.from(expense.getDate());
-            if (expenseMonth.equals(yearMonth)) {
-                total = total.add(expense.getAmount());
-            }
-        }
-
-        return total;
+    @SuppressWarnings("null")
+    public BigDecimal getTotalExpensesForMonth(YearMonth yearMonth, User user) {
+        return getAllExpenses(user).stream()
+                .filter(e -> YearMonth.from(e.getDate()).equals(yearMonth))
+                .map(Expense::getAmount)
+                .reduce(BigDecimal.ZERO, BigDecimal::add);
     }
 
     /**
      * Generates a Month-over-Month report comparing the current month against the previous month.
      */
-    public MonthOverMonthReport getMonthOverMonthReport() {
+    public MonthOverMonthReport getMonthOverMonthReport(User user) {
         YearMonth currentMonth = YearMonth.now();
         YearMonth previousMonth = currentMonth.minusMonths(1);
 
-        BigDecimal currentTotal = getTotalExpensesForMonth(currentMonth);
-        BigDecimal previousTotal = getTotalExpensesForMonth(previousMonth);
+        BigDecimal currentTotal = getTotalExpensesForMonth(currentMonth, user);
+        BigDecimal previousTotal = getTotalExpensesForMonth(previousMonth, user);
 
         BigDecimal difference = currentTotal.subtract(previousTotal);
 
@@ -140,4 +128,21 @@ public class ExpenseService {
                 difference, percentageChange);
     }
 
+    private List<Expense> filterByUser(List<Expense> expenses, User user) {
+        if (user == null) {
+            return expenses.stream()
+                    .filter(e -> e.getUser() == null)
+                    .collect(Collectors.toList());
+        }
+        return expenses.stream()
+                .filter(e -> e.getUser() != null && e.getUser().getId().equals(user.getId()))
+                .collect(Collectors.toList());
+    }
+
+    private boolean belongsToUser(Expense expense, User user) {
+        if (user == null) {
+            return expense.getUser() == null;
+        }
+        return expense.getUser() != null && expense.getUser().getId().equals(user.getId());
+    }
 }
