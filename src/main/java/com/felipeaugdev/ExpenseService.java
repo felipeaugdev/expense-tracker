@@ -6,6 +6,7 @@ import java.time.LocalDate;
 import java.time.YearMonth;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.TreeMap;
 import java.util.stream.Collectors;
 
@@ -30,12 +31,11 @@ public class ExpenseService {
         return filterByUser(all, user);
     }
 
-    @SuppressWarnings("null")
     public boolean deleteExpense(int id, User user) {
         return repository.findById(id)
                 .filter(expense -> belongsToUser(expense, user))
                 .map(expense -> {
-                    repository.delete(expense);
+                    repository.delete(Objects.requireNonNull(expense));
                     return true;
                 })
                 .orElse(false);
@@ -47,7 +47,6 @@ public class ExpenseService {
      * @param days Number of days back to include (0 for All Time).
      * @return Map where the key is the category name and the value is the total amount.
      */
-    @SuppressWarnings("null")
     public Map<String, BigDecimal> getTotalExpensesByCategory(int days, User user) {
         List<Expense> filtered = getExpensesByDateRange(days, user);
         Map<String, BigDecimal> categoryTotals = new TreeMap<>();
@@ -55,7 +54,7 @@ public class ExpenseService {
         for (Expense expense : filtered) {
             String category = expense.getCategory();
             BigDecimal amount = expense.getAmount();
-            categoryTotals.merge(category, amount, BigDecimal::add);
+            categoryTotals.merge(category, amount, (a, b) -> a.add(b));
         }
         return categoryTotals;
     }
@@ -66,11 +65,10 @@ public class ExpenseService {
      * @param days Number of days back to include (0 for All Time).
      * @return BigDecimal total of all expenses within the time range.
      */
-    @SuppressWarnings("null")
     public BigDecimal getTotalExpenses(int days, User user) {
         return getExpensesByDateRange(days, user).stream()
-                .map(Expense::getAmount)
-                .reduce(BigDecimal.ZERO, BigDecimal::add);
+                .map(e -> e.getAmount())
+                .reduce(BigDecimal.ZERO, (a, b) -> a.add(a));
     }
 
     /**
@@ -95,12 +93,11 @@ public class ExpenseService {
     /**
      * Calculates total expenses for a specific calendar month.
      */
-    @SuppressWarnings("null")
     public BigDecimal getTotalExpensesForMonth(YearMonth yearMonth, User user) {
         return getAllExpenses(user).stream()
                 .filter(e -> YearMonth.from(e.getDate()).equals(yearMonth))
-                .map(Expense::getAmount)
-                .reduce(BigDecimal.ZERO, BigDecimal::add);
+                .map(e -> e.getAmount())
+                .reduce(BigDecimal.ZERO, (a, b) -> a.add(b));
     }
 
     /**

@@ -16,6 +16,7 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 @ExtendWith(MockitoExtension.class)
+@SuppressWarnings("null")
 public class ExpenseServiceTest {
 
     @Mock
@@ -25,7 +26,6 @@ public class ExpenseServiceTest {
     private ExpenseService service;
 
     @Test
-    @SuppressWarnings("null")
     void testAddExpenseSavesAndReturnsExpense() {
         Expense sample = new Expense(new BigDecimal("5.50"), LocalDate.now(), "Coffee", "FOOD");
         when(repository.save(any(Expense.class))).thenReturn(sample);
@@ -61,7 +61,6 @@ public class ExpenseServiceTest {
     }
 
     @Test
-    @SuppressWarnings("null")
     void testDeleteNonExistentExpenseReturnsFalse() {
         when(repository.findById(999)).thenReturn(java.util.Optional.empty());
 

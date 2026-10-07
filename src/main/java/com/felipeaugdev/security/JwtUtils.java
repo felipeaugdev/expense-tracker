@@ -7,7 +7,6 @@ import javax.crypto.SecretKey;
 
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.core.Authentication;
-import org.springframework.security.core.GrantedAuthority;
 import org.springframework.stereotype.Component;
 
 import io.jsonwebtoken.Claims;
@@ -27,12 +26,11 @@ public class JwtUtils {
         return Keys.hmacShaKeyFor(jwtSecret.getBytes(java.nio.charset.StandardCharsets.UTF_8));
     }
 
-    @SuppressWarnings("null")
     public String generateToken(Authentication authentication) {
         String username = authentication.getName();
 
         String roles = authentication.getAuthorities().stream()
-                .map(GrantedAuthority::getAuthority)
+                .map(auth -> auth.getAuthority())
                 .collect(Collectors.joining(","));
 
         Date now = new Date();

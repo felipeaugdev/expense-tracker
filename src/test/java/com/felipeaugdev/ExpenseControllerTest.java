@@ -24,6 +24,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 @WebMvcTest(ExpenseController.class)
 @AutoConfigureMockMvc(addFilters = false)
+@SuppressWarnings("null")
 class ExpenseControllerTest {
 
     @Autowired
@@ -53,7 +54,6 @@ class ExpenseControllerTest {
     }
 
     @Test
-    @SuppressWarnings("null")
     void testAddExpenseReturnsCreatedStatus() throws Exception {
         Expense expense = new Expense(new BigDecimal("25.50"), LocalDate.now(), "Dinner", "FOOD");
         when(expenseService.addExpense(any(BigDecimal.class), eq("Dinner"), eq("FOOD"), any()))

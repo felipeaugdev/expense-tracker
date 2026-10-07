@@ -23,6 +23,7 @@ import com.felipeaugdev.security.JwtUtils;
 
 @WebMvcTest(AuthController.class)
 @AutoConfigureMockMvc(addFilters = false)
+@SuppressWarnings("null")
 public class AuthControllerTest {
 
     @Autowired
@@ -44,7 +45,6 @@ public class AuthControllerTest {
     private JwtUtils jwtUtils;
 
     @Test
-    @SuppressWarnings("null")
     void testRegisterSuccess() throws Exception {
         AuthRequest request = new AuthRequest("newuser", "password123");
 
@@ -59,7 +59,6 @@ public class AuthControllerTest {
     }
 
     @Test
-    @SuppressWarnings("null")
     void testRegisterUsernameTaken() throws Exception {
         AuthRequest request = new AuthRequest("existing", "password123");
 
@@ -73,7 +72,6 @@ public class AuthControllerTest {
     }
 
     @Test
-    @SuppressWarnings("null")
     void testLoginSuccess() throws Exception {
         AuthRequest request = new AuthRequest("testuser", "password123");
 
