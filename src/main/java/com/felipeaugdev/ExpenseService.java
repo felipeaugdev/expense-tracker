@@ -68,7 +68,7 @@ public class ExpenseService {
     public BigDecimal getTotalExpenses(int days, User user) {
         return getExpensesByDateRange(days, user).stream()
                 .map(e -> e.getAmount())
-                .reduce(BigDecimal.ZERO, (a, b) -> a.add(a));
+                .reduce(BigDecimal.ZERO, (a, b) -> a.add(b));
     }
 
     /**
