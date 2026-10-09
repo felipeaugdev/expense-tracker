@@ -41,6 +41,8 @@ const TRANSLATIONS = {
     noTransactions: "No transactions found",
     deleteBtn: "Delete",
     deleteConfirm: "Are you sure you want to delete this expense?",
+    invalidAmount:
+      "Please enter a valid positive amount (e.g. 5.99 or 1234.56)",
     categories: {
       FOOD: "Food",
       TRANSPORTATION: "Transportation",
@@ -91,6 +93,8 @@ const TRANSLATIONS = {
     noTransactions: "Nenhuma transação encontrada",
     deleteBtn: "Excluir",
     deleteConfirm: "Tem certeza de que deseja excluir esta despesa?",
+    invalidAmount:
+      "Por favor, insira um valor positivo válido (ex: 5,99 ou 1234,56)",
     categories: {
       FOOD: "Alimentação",
       TRANSPORTATION: "Transporte",
@@ -192,6 +196,7 @@ function setupSettingsUI() {
   currencySelect.addEventListener("change", (e) => {
     currentCurrency = e.target.value;
     localStorage.setItem("preferred_currency", currentCurrency);
+    updateAmountPlaceholder();
     initDashboard();
   });
 
@@ -251,7 +256,15 @@ function applyLanguage() {
     });
   }
 
+  updateAmountPlaceholder();
   updateAuthUI();
+}
+
+function updateAmountPlaceholder() {
+  const input = document.getElementById("amount");
+  if (!input) return;
+
+  input.placeholder = currentCurrency === "BRL" ? "0,00" : "0.00";
 }
 
 function getAuthHeaders() {
@@ -432,13 +445,15 @@ async function loadTransactions(days = "") {
 async function handleAddExpense(e) {
   e.preventDefault();
 
+  const dict = TRANSLATIONS[currentLang];
+
   const rawAmount = document.getElementById("amount").value;
   const amount = parseAmount(rawAmount);
   const category = document.getElementById("category").value;
   const description = document.getElementById("description").value;
 
   if (amount === null || amount <= 0) {
-    alert("Please enter a valid positive amount (e.g. 5.99 or 5,99)");
+    alert(dict.invalidAmount);
     return;
   }
 
