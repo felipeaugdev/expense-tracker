@@ -432,9 +432,15 @@ async function loadTransactions(days = "") {
 async function handleAddExpense(e) {
   e.preventDefault();
 
-  const amount = parseFloat(document.getElementById("amount").value);
+  const rawAmount = document.getElementById("amount").value;
+  const amount = parseAmount(rawAmount);
   const category = document.getElementById("category").value;
   const description = document.getElementById("description").value;
+
+  if (amount === null || amount <= 0) {
+    alert("Please enter a valid positive amount (e.g. 5.99 or 5,99)");
+    return;
+  }
 
   try {
     const response = await fetch(API_BASE_URL, {
@@ -476,6 +482,33 @@ function formatCurrency(amount) {
     style: "currency",
     currency: currentCurrency,
   }).format(amount);
+}
+
+/**
+ * Parses a user-entered amount string that may use
+ * either comma or dot as decimal separator and may contain
+ * thousand separators (depending on the selected currency).
+ * Returns a number or null if invalid.
+ */
+function parseAmount(value) {
+  if (!value || typeof value !== "string") return null;
+
+  let cleaned = value.trim().replace(/[^\d.,]/g, "");
+  if (cleaned === "") return null;
+
+  const isBR = currentCurrency === "BRL";
+
+  if (isBR) {
+    // Brazilian format: 1.234,56
+    cleaned = cleaned.replace(/\./g, "");
+    cleaned = cleaned.replace(",", ".");
+  } else {
+    // US format: 1,234.56
+    cleaned = cleaned.replace(/,/g, "");
+  }
+
+  const number = parseFloat(cleaned);
+  return isNaN(number) ? null : number;
 }
 
 // =========================
