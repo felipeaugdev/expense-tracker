@@ -1,6 +1,9 @@
 # Expense Tracker REST API & Dashboard
 ![CI Status](https://github.com/felipeaugdev/expense-tracker/actions/workflows/ci.yml/badge.svg)
 
+**Live Demo:** [https://expense-tracker-4d81.onrender.com](https://expense-tracker-4d81.onrender.com)  
+*(May take 30–60 seconds to wake up on first visit)*
+
 A full-stack personal expense tracking application with real-time analytics. Built with Java 21, Spring Boot, MariaDB, Docker, and a modern Vanilla JS/Tailwind CSS dashboard.
 
 ## Screenshots
@@ -31,7 +34,7 @@ A full-stack personal expense tracking application with real-time analytics. Bui
 - **Language & Framework:** Java 21 LTS, Spring Boot 3.3 (Spring Web, Spring Data JPA, Spring Security)
 - **Authentication:** JWT (JJWT library)
 - **Frontend:** HTML5, Tailwind CSS (CDN), Vanilla JavaScript (ES6+), Chart.js
-- **Database:** MariaDB 11
+- **Database:** MariaDB 11 (local) / PostgreSQL (live demo on Render)
 - **Build & Package:** Maven, Docker, Docker Compose
 - **Testing:** JUnit 5, Mockito, MockMvc
 - **Documentation:** SpringDoc OpenAPI

@@ -13,6 +13,10 @@ This expense tracker was built primarily with Java. It uses Spring Boot and JPA 
 
 ## Dev Log
 
+### [October 13, 2026] - Live Demo on Render
+* **What changed:** Deployed the application to Render (free tier) using PostgreSQL. Added environment-variable based configuration so the same codebase works with both MariaDB (local) and Postgres (production).
+* **Why:** To provide a public live demo for easy access and testing.
+
 ### [October 2–3, 2026] - Optional User Accounts & JWT Authentication
 * **What changed:** Added Spring Security + JJWT. Users can now optionally register and log in. Expenses are fully isolated per account while still allowing anonymous (guest) usage. Introduced an ExpenseResponse DTO for cleaner API responses.
 * **Why:** To demonstrate authentication, authorization, and multi-user data separation. This is good for shared machines, and it's also a staple of financial apps.
