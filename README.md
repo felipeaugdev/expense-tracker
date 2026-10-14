@@ -65,7 +65,7 @@ A full-stack personal expense tracking application with real-time analytics. Bui
 
 1. **Clone the repository:**
    ```bash
-   git clone [https://github.com/felipeaugdev/expense-tracker.git](https://github.com/felipeaugdev/expense-tracker.git)
+   git clone https://github.com/felipeaugdev/expense-tracker.git
    cd expense-tracker
    ```
 
