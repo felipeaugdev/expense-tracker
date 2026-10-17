@@ -33,6 +33,7 @@ public class SecurityConfig {
                         .requestMatchers("/api/auth/**").permitAll()
                         .requestMatchers(HttpMethod.GET, "/api/expenses/**").permitAll()
                         .requestMatchers(HttpMethod.POST, "/api/expenses").permitAll()
+                        .requestMatchers(HttpMethod.PUT, "/api/expenses/**").permitAll()
                         .requestMatchers(HttpMethod.DELETE, "/api/expenses/**").permitAll()
 
                         // Static frontend

@@ -12,6 +12,8 @@ import java.util.stream.Collectors;
 
 import org.springframework.stereotype.Service;
 
+import com.felipeaugdev.dto.ExpenseUpdateRequest;
+
 @Service
 public class ExpenseService {
 
@@ -29,6 +31,27 @@ public class ExpenseService {
     public List<Expense> getAllExpenses(User user) {
         List<Expense> all = repository.findAll();
         return filterByUser(all, user);
+    }
+
+    public Expense updateExpense(int id, ExpenseUpdateRequest request, User currentUser) {
+        Expense expense = repository.findById(id)
+                .filter(e -> belongsToUser(e, currentUser))
+                .orElseThrow(() -> new RuntimeException("Expense not found or access denied"));
+
+        if (request.getAmount() != null) {
+            expense.setAmount(request.getAmount());
+        }
+        if (request.getDate() != null) {
+            expense.setDate(request.getDate());
+        }
+        if (request.getDescription() != null) {
+            expense.setDescription(request.getDescription());
+        }
+        if (request.getCategory() != null) {
+            expense.setCategory(request.getCategory());
+        }
+
+        return repository.save(Objects.requireNonNull(expense));
     }
 
     public boolean deleteExpense(int id, User user) {

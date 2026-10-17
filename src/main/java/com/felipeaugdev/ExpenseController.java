@@ -12,6 +12,7 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 
 import com.felipeaugdev.dto.ExpenseResponse;
+import com.felipeaugdev.dto.ExpenseUpdateRequest;
 
 @RestController
 @RequestMapping("/api/expenses")
@@ -58,6 +59,15 @@ public class ExpenseController {
                 expense.getAmount(), expense.getDescription(),
                 expense.getCategory(), getCurrentUser());
         return ExpenseResponse.from(saved);
+    }
+
+    @PutMapping("/{id}")
+    public ExpenseResponse updateExpense(
+            @PathVariable int id,
+            @RequestBody ExpenseUpdateRequest request) {
+
+        Expense updated = expenseService.updateExpense(id, request, getCurrentUser());
+        return ExpenseResponse.from(updated);
     }
 
     @DeleteMapping("/{id}")
