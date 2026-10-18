@@ -59,7 +59,7 @@ public class Expense {
         this.user = user;
     }
 
-    // --- GETTERS AND SETTERS ---
+    // --- GETTERS & SETTERS ---
     public Integer getId() {
         return id;
     }

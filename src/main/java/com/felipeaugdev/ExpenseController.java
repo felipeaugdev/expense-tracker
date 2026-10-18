@@ -11,8 +11,11 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 
+import com.felipeaugdev.dto.ExpenseCreateRequest;
 import com.felipeaugdev.dto.ExpenseResponse;
 import com.felipeaugdev.dto.ExpenseUpdateRequest;
+
+import jakarta.validation.Valid;
 
 @RestController
 @RequestMapping("/api/expenses")
@@ -54,7 +57,7 @@ public class ExpenseController {
 
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
-    public ExpenseResponse addExpense(@RequestBody Expense expense) {
+    public ExpenseResponse addExpense(@Valid @RequestBody ExpenseCreateRequest expense) {
         Expense saved = expenseService.addExpense(
                 expense.getAmount(), expense.getDescription(),
                 expense.getCategory(), getCurrentUser());
@@ -64,7 +67,7 @@ public class ExpenseController {
     @PutMapping("/{id}")
     public ExpenseResponse updateExpense(
             @PathVariable int id,
-            @RequestBody ExpenseUpdateRequest request) {
+            @Valid @RequestBody ExpenseUpdateRequest request) {
 
         Expense updated = expenseService.updateExpense(id, request, getCurrentUser());
         return ExpenseResponse.from(updated);
