@@ -1,10 +1,10 @@
 package com.felipeaugdev;
 
 import java.math.BigDecimal;
-import java.util.List;
 import java.util.Map;
-import java.util.stream.Collectors;
 
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
@@ -48,11 +48,26 @@ public class ExpenseController {
     }
 
     @GetMapping
-    public List<ExpenseResponse> getExpenses(@RequestParam(defaultValue = "0") int days) {
-        return expenseService.getExpensesByDateRange(days, getCurrentUser())
-                .stream()
-                .map(ExpenseResponse::from)
-                .collect(Collectors.toList());
+    public Page<ExpenseResponse> getExpenses(
+            @RequestParam(defaultValue = "0") int days,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "20") int size,
+            @RequestParam(defaultValue = "date,desc") String sort) {
+
+        String[] sortParts = sort.split(",");
+        String sortField = sortParts[0];
+        String sortDirection = sortParts.length > 1 ? sortParts[1] : "desc";
+
+        var direction = sortDirection.equalsIgnoreCase("asc")
+                ? org.springframework.data.domain.Sort.Direction.ASC
+                : org.springframework.data.domain.Sort.Direction.DESC;
+
+        Pageable pageable = org.springframework.data.domain.PageRequest.of(
+                page, size, org.springframework.data.domain.Sort.by(direction, sortField));
+
+        return expenseService.getExpenses(days, getCurrentUser(), pageable)
+                .map(ExpenseResponse::from);
+
     }
 
     @PostMapping

@@ -10,6 +10,8 @@ import java.util.Objects;
 import java.util.TreeMap;
 import java.util.stream.Collectors;
 
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 import com.felipeaugdev.dto.ExpenseUpdateRequest;
@@ -31,6 +33,23 @@ public class ExpenseService {
     public List<Expense> getAllExpenses(User user) {
         List<Expense> all = repository.findAll();
         return filterByUser(all, user);
+    }
+
+    public Page<Expense> getExpenses(int days, User user, Pageable pageable) {
+        List<Expense> filtered = getExpensesByDateRange(days, user);
+        filtered = sortExpenses(filtered, pageable);
+
+        int start = (int) pageable.getOffset();
+        int end = Math.min(start + pageable.getPageSize(), filtered.size());
+
+        List<Expense> pageContent = start >= filtered.size()
+                ? List.of()
+                : filtered.subList(start, end);
+
+        return new org.springframework.data.domain.PageImpl<>(
+                Objects.requireNonNull(pageContent),
+                pageable,
+                filtered.size());
     }
 
     public Expense updateExpense(int id, ExpenseUpdateRequest request, User currentUser) {
@@ -95,7 +114,7 @@ public class ExpenseService {
     }
 
     /**
-     * Retrieve expenses filtered by date range.
+     * Retrieves expenses filtered by date range.
      * 
      * @param days Number of days back to filter (7, 14, 30). Pass 0 for All Time.
      * @return List of matching Expense objects.
@@ -164,5 +183,31 @@ public class ExpenseService {
             return expense.getUser() == null;
         }
         return expense.getUser() != null && expense.getUser().getId().equals(user.getId());
+    }
+
+    private List<Expense> sortExpenses(List<Expense> expenses, Pageable pageable) {
+        if (!pageable.getSort().isSorted()) {
+            return expenses;
+        }
+
+        return expenses.stream()
+                .sorted((e1, e2) -> {
+                    for (var order : pageable.getSort()) {
+                        int comparison = switch (order.getProperty()) {
+                            case "date" -> e1.getDate().compareTo(e2.getDate());
+                            case "amount" -> e1.getAmount().compareTo(e2.getAmount());
+                            case "description" -> e1.getDescription().compareToIgnoreCase(e2.getDescription());
+                            case "category" -> e1.getCategory().compareToIgnoreCase(e2.getCategory());
+                            case "id" -> e1.getId().compareTo(e2.getId());
+                            default -> 0;
+                        };
+
+                        if (comparison != 0) {
+                            return order.isAscending() ? comparison : -comparison;
+                        }
+                    }
+                    return 0;
+                })
+                .toList();
     }
 }
