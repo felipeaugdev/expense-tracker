@@ -12,6 +12,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.MediaType;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.test.web.servlet.MockMvc;
@@ -45,12 +47,16 @@ class ExpenseControllerTest {
     @Test
     void testGetExpensesReturnsJsonList() throws Exception {
         Expense expense = new Expense(new BigDecimal("15.00"), LocalDate.now(), "Coffee", "FOOD");
-        when(expenseService.getExpensesByDateRange(eq(0), any())).thenReturn(List.of(expense));
+
+        Page<Expense> page = new org.springframework.data.domain.PageImpl<>(List.of(expense));
+
+        when(expenseService.getExpenses(eq(0), any(), any(Pageable.class)))
+                .thenReturn(page);
 
         mockMvc.perform(get("/api/expenses"))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$[0].description").value("Coffee"))
-                .andExpect(jsonPath("$[0].amount").value(15.00));
+                .andExpect(jsonPath("$.content[0].description").value("Coffee"))
+                .andExpect(jsonPath("$.content[0].amount").value(15.00));
     }
 
     @Test
