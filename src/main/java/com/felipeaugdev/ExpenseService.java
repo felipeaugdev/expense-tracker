@@ -20,12 +20,17 @@ import com.felipeaugdev.dto.ExpenseUpdateRequest;
 public class ExpenseService {
 
     private final ExpenseRepository repository;
+    private final CategoryRepository categoryRepository;
 
-    public ExpenseService(ExpenseRepository repository) {
+    public ExpenseService(ExpenseRepository repository, CategoryRepository categoryRepository) {
         this.repository = repository;
+        this.categoryRepository = categoryRepository;
     }
 
-    public Expense addExpense(BigDecimal amount, String description, String category, User user) {
+    public Expense addExpense(BigDecimal amount, String description, String categoryName, User user) {
+        Category category = categoryRepository.findByName(categoryName)
+                .orElseThrow(() -> new RuntimeException("Category not found: " + categoryName));
+
         Expense newExpense = new Expense(amount, LocalDate.now(), description, category, user);
         return repository.save(newExpense);
     }
@@ -67,7 +72,10 @@ public class ExpenseService {
             expense.setDescription(request.getDescription());
         }
         if (request.getCategory() != null) {
-            expense.setCategory(request.getCategory());
+            Category category = categoryRepository.findByName(request.getCategory())
+                    .orElseThrow(() -> new RuntimeException("Category not found: " + request.getCategory()));
+
+            expense.setCategory(category);
         }
 
         return repository.save(Objects.requireNonNull(expense));
@@ -94,9 +102,9 @@ public class ExpenseService {
         Map<String, BigDecimal> categoryTotals = new TreeMap<>();
 
         for (Expense expense : filtered) {
-            String category = expense.getCategory();
+            String categoryName = expense.getCategory().getName();
             BigDecimal amount = expense.getAmount();
-            categoryTotals.merge(category, amount, (a, b) -> a.add(b));
+            categoryTotals.merge(categoryName, amount, (a, b) -> a.add(b));
         }
         return categoryTotals;
     }
@@ -197,7 +205,8 @@ public class ExpenseService {
                             case "date" -> e1.getDate().compareTo(e2.getDate());
                             case "amount" -> e1.getAmount().compareTo(e2.getAmount());
                             case "description" -> e1.getDescription().compareToIgnoreCase(e2.getDescription());
-                            case "category" -> e1.getCategory().compareToIgnoreCase(e2.getCategory());
+                            case "category" ->
+                                e1.getCategory().getName().compareToIgnoreCase(e2.getCategory().getName());
                             case "id" -> e1.getId().compareTo(e2.getId());
                             default -> 0;
                         };

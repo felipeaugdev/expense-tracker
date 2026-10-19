@@ -22,8 +22,9 @@ public class Expense {
     @Column(nullable = false)
     private String description;
 
-    @Column(nullable = false)
-    private String category;
+    @ManyToOne(fetch = FetchType.EAGER)
+    @JoinColumn(name = "category_id", nullable = false)
+    private Category category;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id", nullable = true)
@@ -34,7 +35,7 @@ public class Expense {
     public Expense() {
     }
 
-    public Expense(BigDecimal amount, LocalDate date, String description, String category) {
+    public Expense(BigDecimal amount, LocalDate date, String description, Category category) {
         this.amount = amount;
         this.date = date;
         this.description = description;
@@ -42,7 +43,7 @@ public class Expense {
         this.user = null;
     }
 
-    public Expense(BigDecimal amount, LocalDate date, String description, String category, User user) {
+    public Expense(BigDecimal amount, LocalDate date, String description, Category category, User user) {
         this.amount = amount;
         this.date = date;
         this.description = description;
@@ -50,7 +51,7 @@ public class Expense {
         this.user = user;
     }
 
-    public Expense(Integer id, BigDecimal amount, LocalDate date, String description, String category, User user) {
+    public Expense(Integer id, BigDecimal amount, LocalDate date, String description, Category category, User user) {
         this.id = id;
         this.amount = amount;
         this.date = date;
@@ -92,11 +93,11 @@ public class Expense {
         this.description = description;
     }
 
-    public String getCategory() {
+    public Category getCategory() {
         return category;
     }
 
-    public void setCategory(String category) {
+    public void setCategory(Category category) {
         this.category = category;
     }
 
@@ -107,5 +108,4 @@ public class Expense {
     public void setUser(User user) {
         this.user = user;
     }
-
 }

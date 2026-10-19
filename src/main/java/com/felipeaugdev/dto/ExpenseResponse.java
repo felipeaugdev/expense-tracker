@@ -29,7 +29,7 @@ public class ExpenseResponse {
                 expense.getAmount(),
                 expense.getDate(),
                 expense.getDescription(),
-                expense.getCategory());
+                expense.getCategory() != null ? expense.getCategory().getName() : null);
     }
 
     public Integer getId() {

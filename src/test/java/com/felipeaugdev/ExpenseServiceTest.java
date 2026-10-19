@@ -8,6 +8,7 @@ import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -25,9 +26,16 @@ public class ExpenseServiceTest {
     @InjectMocks
     private ExpenseService service;
 
+    @Mock
+    private CategoryRepository categoryRepository;
+
+    private final Category food = new Category("FOOD");
+    private final Category transportation = new Category("TRANSPORTATION");
+
     @Test
     void testAddExpenseSavesAndReturnsExpense() {
-        Expense sample = new Expense(new BigDecimal("5.50"), LocalDate.now(), "Coffee", "FOOD");
+        Expense sample = new Expense(new BigDecimal("5.50"), LocalDate.now(), "Coffee", food);
+        when(categoryRepository.findByName("FOOD")).thenReturn(Optional.of(food));
         when(repository.save(any(Expense.class))).thenReturn(sample);
 
         Expense created = service.addExpense(new BigDecimal("5.50"), "Coffee", "FOOD", null);
@@ -40,8 +48,8 @@ public class ExpenseServiceTest {
 
     @Test
     void testCalculateTotalExpenses() {
-        Expense e1 = new Expense(new BigDecimal("10.00"), LocalDate.now(), "Lunch", "FOOD");
-        Expense e2 = new Expense(new BigDecimal("20.00"), LocalDate.now(), "Bus Pass", "TRANSPORTATION");
+        Expense e1 = new Expense(new BigDecimal("10.00"), LocalDate.now(), "Lunch", food);
+        Expense e2 = new Expense(new BigDecimal("20.00"), LocalDate.now(), "Bus Pass", transportation);
         when(repository.findAll()).thenReturn(List.of(e1, e2));
 
         BigDecimal total = service.getTotalExpenses(0, null);
@@ -51,7 +59,7 @@ public class ExpenseServiceTest {
 
     @Test
     void testDeleteExistingExpenseReturnsTrue() {
-        Expense expense = new Expense(new BigDecimal("10.00"), LocalDate.now(), "Test", "FOOD");
+        Expense expense = new Expense(new BigDecimal("10.00"), LocalDate.now(), "Test", food);
         when(repository.findById(1)).thenReturn(java.util.Optional.of(expense));
 
         boolean deleted = service.deleteExpense(1, null);
@@ -91,8 +99,8 @@ public class ExpenseServiceTest {
 
     @Test
     void testDateRangeFilteringAllTime() {
-        Expense e1 = new Expense(new BigDecimal("25.00"), LocalDate.now(), "Movie Ticket", "ENTERTAINMENT");
-        Expense e2 = new Expense(new BigDecimal("12.00"), LocalDate.now(), "Lunch", "FOOD");
+        Expense e1 = new Expense(new BigDecimal("25.00"), LocalDate.now(), "Uber", transportation);
+        Expense e2 = new Expense(new BigDecimal("12.00"), LocalDate.now(), "Lunch", food);
         when(repository.findAll()).thenReturn(List.of(e1, e2));
 
         List<Expense> result = service.getExpensesByDateRange(0, null);
