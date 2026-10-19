@@ -2,7 +2,6 @@ package com.felipeaugdev.security;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.http.HttpMethod;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
@@ -29,15 +28,14 @@ public class SecurityConfig {
                 .csrf(csrf -> csrf.disable())
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(auth -> auth
-                        // Public endpoints (guest mode)
-                        .requestMatchers("/api/auth/**").permitAll()
-                        .requestMatchers(HttpMethod.GET, "/api/expenses/**").permitAll()
-                        .requestMatchers(HttpMethod.POST, "/api/expenses").permitAll()
-                        .requestMatchers(HttpMethod.PUT, "/api/expenses/**").permitAll()
-                        .requestMatchers(HttpMethod.DELETE, "/api/expenses/**").permitAll()
+                        // Public endpoints & Authentication
+                        .requestMatchers("/api/**").permitAll()
 
                         // Static frontend
                         .requestMatchers("/", "/index.html", "/app.js", "/favicon.ico").permitAll()
+
+                        // Debugging
+                        .requestMatchers("/error").permitAll()
 
                         // Swagger
                         .requestMatchers(
