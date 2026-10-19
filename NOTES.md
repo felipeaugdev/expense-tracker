@@ -13,6 +13,10 @@ This expense tracker was built primarily with Java. It uses Spring Boot and JPA 
 
 ## Dev Log
 
+### [October 16-19, 2026] - Pagination and Sorting (Backend)
+* **What changed:** The REST Controller now accepts pagination and sorting parameters. The Service layer was also refactored appropriately. All parameters can be easily viewed and changed in Swagger.
+* **Why:** This improvement makes the backend more robust. Instead of storing the expenses and presenting them in their raw form by order of insertion, this update introduces real sorting and custom pagination in the backend.
+
 ### [October 13, 2026] - Live Demo on Render
 * **What changed:** Deployed the application to Render (free tier) using PostgreSQL. Added environment-variable based configuration so the same codebase works with both MariaDB (local) and Postgres (production).
 * **Why:** To provide a public live demo for easy access and testing.
