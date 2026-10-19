@@ -410,7 +410,8 @@ async function loadTransactions(days = "") {
       headers: getAuthHeaders(),
     });
     if (!response.ok) throw new Error("Failed to fetch transactions");
-    const expenses = await response.json();
+    const page = await response.json();
+    const expenses = page.content || [];
 
     const tbody = document.getElementById("expense-table-body");
     const dict = TRANSLATIONS[currentLang];
@@ -424,9 +425,7 @@ async function loadTransactions(days = "") {
       return;
     }
 
-    const reversedExpenses = [...expenses].reverse();
-
-    reversedExpenses.forEach((exp) => {
+    expenses.forEach((exp) => {
       const tr = document.createElement("tr");
       tr.className = "hover:bg-slate-50 dark:hover:bg-slate-700/50 transition";
       const localizedCategory = dict.categories[exp.category] || exp.category;
