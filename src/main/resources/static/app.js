@@ -141,6 +141,7 @@ document.addEventListener("DOMContentLoaded", () => {
   setupSettingsUI();
   applyLanguage();
   initDashboard();
+  loadCategories();
 
   document
     .getElementById("expense-form")
@@ -353,9 +354,13 @@ function renderChart(labels, data) {
   const sliceBorderColor = isDark ? "#1e293b" : "#ffffff";
 
   const dict = TRANSLATIONS[currentLang];
-  const translatedLabels = labels.map(
-    (key) => dict.categories[key.toUpperCase()] || key,
-  );
+  const translatedLabels = labels.map((key) => {
+    const upper = key.toUpperCase();
+    return (
+      dict.categories[upper] ||
+      key.charAt(0).toUpperCase() + key.slice(1).toLowerCase()
+    );
+  });
 
   const backgroundColors = labels.map(
     (label) => CATEGORY_COLORS[label.toUpperCase()] || "#94a3b8",
@@ -428,7 +433,10 @@ async function loadTransactions(days = "") {
     expenses.forEach((exp) => {
       const tr = document.createElement("tr");
       tr.className = "hover:bg-slate-50 dark:hover:bg-slate-700/50 transition";
-      const localizedCategory = dict.categories[exp.category] || exp.category;
+      const localizedCategory =
+        dict.categories[exp.category] ||
+        exp.category.charAt(0).toUpperCase() +
+          exp.category.slice(1).toLowerCase();
 
       tr.innerHTML = `
         <td class="py-3 font-mono text-xs text-slate-500 dark:text-slate-400">${exp.date || "N/A"}</td>
@@ -514,6 +522,50 @@ async function deleteExpense(id) {
   } catch (err) {
     alert("Error deleting expense: " + err.message);
   }
+}
+
+async function loadCategories() {
+  try {
+    const response = await fetch("/api/categories", {
+      headers: getAuthHeaders(),
+    });
+    if (!response.ok) throw new Error("Failed to load categories");
+
+    const categories = await response.json();
+    populateCategorySelects(categories);
+  } catch (err) {
+    console.error("Error loading categories:", err);
+  }
+}
+
+function populateCategorySelects(categories) {
+  const dict = TRANSLATIONS[currentLang];
+
+  const selects = [
+    document.getElementById("category"),
+    document.getElementById("edit-category"),
+  ];
+
+  selects.forEach((select) => {
+    if (!select) return;
+
+    const currentValue = select.value;
+
+    select.innerHTML = "";
+
+    categories.forEach((cat) => {
+      const option = document.createElement("option");
+      option.value = cat.name;
+      option.textContent =
+        dict.categories[cat.name] ||
+        cat.name.charAt(0).toUpperCase() + cat.name.slice(1).toLowerCase();
+      select.appendChild(option);
+    });
+
+    if (currentValue) {
+      select.value = currentValue;
+    }
+  });
 }
 
 function formatCurrency(amount) {
@@ -727,6 +779,7 @@ async function handleAuthSubmit(e) {
 
       closeAuthModal();
       updateAuthUI();
+      await loadCategories();
       await initDashboard();
     } else {
       // --- REGISTER ---
@@ -763,5 +816,6 @@ function logout() {
   localStorage.removeItem("jwt_token");
   localStorage.removeItem("current_user");
   updateAuthUI();
+  loadCategories();
   initDashboard();
 }

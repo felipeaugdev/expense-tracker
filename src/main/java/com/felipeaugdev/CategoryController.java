@@ -13,6 +13,7 @@ import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.felipeaugdev.dto.CategoryRequest;
+import com.felipeaugdev.dto.CategoryResponse;
 
 import jakarta.validation.Valid;
 
@@ -43,21 +44,38 @@ public class CategoryController {
     }
 
     @GetMapping
-    public List<Category> getCategories() {
+    public List<CategoryResponse> getCategories() {
         User currentUser = getCurrentUser();
 
+        List<Category> categories;
         if (currentUser == null) {
             // Guest -> only system categories
-            return categoryRepository.findByUserIsNull();
+            categories = categoryRepository.findByUserIsNull();
+        } else {
+            // Logged-in user -> system categories + their own
+            categories = categoryRepository.findByUserIsNullOrUserId(currentUser.getId());
         }
 
-        // Logged-in user -> system categories + their own
-        return categoryRepository.findByUserIsNullOrUserId(currentUser.getId());
+        return categories.stream()
+                .sorted((c1, c2) -> {
+                    // System categories (user == null) first
+                    boolean c1System = c1.getUser() == null;
+                    boolean c2System = c2.getUser() == null;
+
+                    if (c1System && !c2System)
+                        return -1;
+                    if (!c1System && c2System)
+                        return 1;
+
+                    return c1.getId().compareTo(c2.getId());
+                })
+                .map(CategoryResponse::from)
+                .toList();
     }
 
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
-    public Category createCategory(@Valid @RequestBody CategoryRequest request) {
+    public CategoryResponse createCategory(@Valid @RequestBody CategoryRequest request) {
         User currentUser = getCurrentUser();
 
         if (currentUser == null) {
@@ -65,8 +83,9 @@ public class CategoryController {
         }
 
         String name = request.getName().trim().toUpperCase();
-
         Category category = new Category(name, currentUser);
-        return categoryRepository.save(category);
+        Category saved = categoryRepository.save(category);
+
+        return CategoryResponse.from(saved);
     }
 }
