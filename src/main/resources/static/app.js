@@ -190,6 +190,55 @@ document.addEventListener("DOMContentLoaded", () => {
     .getElementById("auth-form")
     ?.addEventListener("submit", handleAuthSubmit);
 
+  document
+    .getElementById("show-new-category")
+    ?.addEventListener("click", () => {
+      document.getElementById("category").classList.add("hidden");
+      document.getElementById("show-new-category").classList.add("hidden");
+      document.getElementById("new-category-form").classList.remove("hidden");
+      document.getElementById("new-category-name").focus();
+    });
+
+  document
+    .getElementById("cancel-new-category")
+    ?.addEventListener("click", () => {
+      hideNewCategoryForm();
+    });
+
+  document
+    .getElementById("add-category-btn")
+    ?.addEventListener("click", async () => {
+      const name = document.getElementById("new-category-name").value.trim();
+      if (!name) {
+        alert("Please enter a category name");
+        return;
+      }
+
+      if (!authToken) {
+        alert("You must be logged in to create a category");
+        return;
+      }
+
+      try {
+        const response = await fetch("/api/categories", {
+          method: "POST",
+          headers: getAuthHeaders(),
+          body: JSON.stringify({ name }),
+        });
+
+        if (!response.ok) throw new Error("Failed to create category");
+
+        const newCategory = await response.json();
+
+        await loadCategories();
+        document.getElementById("category").value = newCategory.name;
+
+        hideNewCategoryForm();
+      } catch (err) {
+        alert("Error creating category: " + err.message);
+      }
+    });
+
   updateAuthUI();
 });
 
@@ -536,6 +585,8 @@ async function loadCategories() {
   } catch (err) {
     console.error("Error loading categories:", err);
   }
+
+  updateNewCategoryVisibility();
 }
 
 function populateCategorySelects(categories) {
@@ -566,6 +617,19 @@ function populateCategorySelects(categories) {
       select.value = currentValue;
     }
   });
+}
+
+function hideNewCategoryForm() {
+  document.getElementById("new-category-form").classList.add("hidden");
+  document.getElementById("category").classList.remove("hidden");
+  document.getElementById("show-new-category").classList.remove("hidden");
+  document.getElementById("new-category-name").value = "";
+}
+
+function updateNewCategoryVisibility() {
+  const btn = document.getElementById("show-new-category");
+  if (!btn) return;
+  btn.classList.toggle("hidden", !authToken);
 }
 
 function formatCurrency(amount) {
@@ -680,6 +744,8 @@ function updateAuthUI() {
     );
     authButton.classList.add("bg-indigo-600", "hover:bg-indigo-700");
   }
+
+  updateNewCategoryVisibility();
 }
 
 function openAuthModal() {

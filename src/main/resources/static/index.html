@@ -187,6 +187,41 @@
                 <option value="SHOPPING">Shopping</option>
                 <option value="OTHER">Other</option>
               </select>
+
+              <button
+                type="button"
+                id="show-new-category"
+                class="mt-1 text-xs text-indigo-600 hover:text-indigo-800 dark:text-indigo-400 dark:hover:text-indigo-300"
+              >
+                + New category
+              </button>
+
+              <div
+                id="new-category-form"
+                class="hidden mt-2 flex gap-2 items-center"
+              >
+                <input
+                  type="text"
+                  id="new-category-name"
+                  placeholder="e.g. Gym"
+                  maxlength="50"
+                  class="flex-1 px-3 py-1.5 text-sm border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-700 text-slate-900 dark:text-white rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                />
+                <button
+                  type="button"
+                  id="add-category-btn"
+                  class="px-3 py-1.5 text-sm bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg"
+                >
+                  Add
+                </button>
+                <button
+                  type="button"
+                  id="cancel-new-category"
+                  class="text-xs text-slate-500 hover:text-slate-700 dark:text-slate-400"
+                >
+                  Cancel
+                </button>
+              </div>
             </div>
             <div>
               <label
