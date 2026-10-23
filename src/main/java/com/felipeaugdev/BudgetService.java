@@ -32,31 +32,8 @@ public class BudgetService {
             return List.of();
         }
 
-        List<Budget> budgets = budgetRepository.findByUserId(user.getId());
-        YearMonth currentMonth = YearMonth.now();
-
-        return budgets.stream()
-                .map(budget -> {
-                    BigDecimal spent = calculateSpent(user, budget.getCategory(), currentMonth);
-                    BigDecimal limit = budget.getAmount();
-                    BigDecimal remaining = limit.subtract(spent).max(BigDecimal.ZERO);
-
-                    double percentage = 0;
-                    if (limit.compareTo(BigDecimal.ZERO) > 0) {
-                        percentage = spent
-                                .divide(limit, 4, RoundingMode.HALF_UP)
-                                .multiply(BigDecimal.valueOf(100))
-                                .doubleValue();
-                    }
-
-                    return new BudgetResponse(
-                            budget.getId(),
-                            budget.getCategory().getName(),
-                            limit,
-                            spent,
-                            remaining,
-                            percentage);
-                })
+        return budgetRepository.findByUserId(user.getId()).stream()
+                .map(budget -> toResponse(budget, user))
                 .collect(Collectors.toList());
     }
 
@@ -68,8 +45,60 @@ public class BudgetService {
                 .filter(e -> e.getUser() != null && e.getUser().getId().equals(user.getId()))
                 .filter(e -> e.getCategory() != null && e.getCategory().getId().equals(category.getId()))
                 .filter(e -> !e.getDate().isBefore(start) && !e.getDate().isAfter(end))
-                .map(Expense::getAmount)
-                .reduce(BigDecimal.ZERO, BigDecimal::add);
+                .map(e -> e.getAmount())
+                .reduce(BigDecimal.ZERO, (a, b) -> a.add(b));
     }
 
+    public BudgetResponse createOrUpdateBudget(User user, String categoryName, BigDecimal amount) {
+        if (user == null) {
+            throw new RuntimeException("You must be logged in to set a budget");
+        }
+
+        Category category = categoryRepository.findByName(categoryName)
+                .orElseThrow(() -> new RuntimeException("Category not found: " + categoryName));
+
+        Budget budget = budgetRepository
+                .findByUserIdAndCategoryId(user.getId(), category.getId())
+                .orElse(new Budget(user, category, amount));
+
+        budget.setAmount(amount);
+        Budget saved = budgetRepository.save(budget);
+
+        return toResponse(saved, user);
+    }
+
+    @SuppressWarnings("null")
+    public void deleteBudget(User user, Long budgetId) {
+        Budget budget = budgetRepository.findById(budgetId)
+                .orElseThrow(() -> new RuntimeException("Budget not found"));
+
+        if (!budget.getUser().getId().equals(user.getId())) {
+            throw new RuntimeException("Access denied");
+        }
+
+        budgetRepository.delete(budget);
+    }
+
+    private BudgetResponse toResponse(Budget budget, User user) {
+        YearMonth currentMonth = YearMonth.now();
+        BigDecimal spent = calculateSpent(user, budget.getCategory(), currentMonth);
+        BigDecimal limit = budget.getAmount();
+        BigDecimal remaining = limit.subtract(spent).max(BigDecimal.ZERO);
+
+        double percentage = 0;
+        if (limit.compareTo(BigDecimal.ZERO) > 0) {
+            percentage = spent
+                    .divide(limit, 4, RoundingMode.HALF_UP)
+                    .multiply(BigDecimal.valueOf(100))
+                    .doubleValue();
+        }
+
+        return new BudgetResponse(
+                budget.getId(),
+                budget.getCategory().getName(),
+                limit,
+                spent,
+                remaining,
+                percentage);
+    }
 }
