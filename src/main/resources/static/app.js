@@ -338,6 +338,7 @@ async function initDashboard() {
     loadMonthlyReport(),
     loadCategoryTotals(currentDays),
     loadTransactions(currentDays),
+    loadBudgets(),
   ]);
 }
 
@@ -630,6 +631,72 @@ function updateNewCategoryVisibility() {
   const btn = document.getElementById("show-new-category");
   if (!btn) return;
   btn.classList.toggle("hidden", !authToken);
+}
+
+async function loadBudgets() {
+  const list = document.getElementById("budgets-list");
+  if (!list) return;
+
+  if (!authToken) {
+    list.innerHTML = `
+      <p class="text-xs text-slate-400 dark:text-slate-500 text-center py-4">
+        No budgets set yet
+      </p>`;
+    return;
+  }
+
+  try {
+    const response = await fetch("/api/budgets", {
+      headers: getAuthHeaders(),
+    });
+    if (!response.ok) throw new Error("Failed to load budgets");
+
+    const budgets = await response.json();
+    renderBudgets(budgets);
+  } catch (err) {
+    console.error("Error loading budgets:", err);
+  }
+}
+
+function renderBudgets(budgets) {
+  const list = document.getElementById("budgets-list");
+  const dict = TRANSLATIONS[currentLang];
+
+  list.innerHTML = "";
+
+  if (!budgets || budgets.length === 0) {
+    list.innerHTML = `
+      <p class="text-xs text-slate-400 dark:text-slate-500 text-center py-4">
+        No budgets set yet
+      </p>`;
+    return;
+  }
+
+  budgets.forEach((b) => {
+    const categoryName =
+      dict.categories[b.category] ||
+      b.category.charAt(0).toUpperCase() + b.category.slice(1).toLowerCase();
+
+    const pct = Math.min(b.percentage, 100);
+    let barColor = "bg-emerald-500";
+    if (b.percentage >= 80) barColor = "bg-amber-500";
+    if (b.percentage >= 100) barColor = "bg-rose-500";
+
+    const row = document.createElement("div");
+    row.className = "flex flex-col gap-0.5";
+    row.innerHTML = `
+      <div class="flex justify-between text-xs">
+        <span class="font-medium text-slate-700 dark:text-slate-300">${categoryName}</span>
+        <span class="text-slate-500 dark:text-slate-400">
+          ${formatCurrency(b.spent)} / ${formatCurrency(b.limit)}
+        </span>
+      </div>
+      <div class="w-full bg-slate-100 dark:bg-slate-700 rounded-full h-1.5">
+        <div class="${barColor} h-1.5 rounded-full" style="width: ${pct}%"></div>
+      </div>
+    `;
+    list.appendChild(row);
+  });
 }
 
 function formatCurrency(amount) {
