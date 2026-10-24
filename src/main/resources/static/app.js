@@ -1049,7 +1049,7 @@ function renderBudgetsInModal(budgets) {
   budgets.forEach((b) => {
     const categoryName =
       dict.categories[b.category] ||
-      category.charAt(0).toUpperCase() + b.category.slice(1).toLowerCase();
+      b.category.charAt(0).toUpperCase() + b.category.slice(1).toLowerCase();
 
     const row = document.createElement("div");
     row.className = "flex items-center gap-2";
