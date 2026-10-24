@@ -11,6 +11,39 @@
         darkMode: "class",
       };
     </script>
+    <!-- Scrollbar Styles -->
+    <style>
+      #budgets-list,
+      #budgets-modal-list {
+        scrollbar-width: none; /* Firefox */
+        -ms-overflow-style: none; /* old Edge */
+      }
+      #budgets-list::-webkit-scrollbar,
+      #budgets-modal-list::-webkit-scrollbar {
+        display: none; /* Chrome, Safari, Edge */
+      }
+
+      /* Chromium Custom Scrollbar */
+      .custom-scrollbar::-webkit-scrollbar {
+        width: 6px;
+      }
+      .custom-scrollbar::-webkit-scrollbar-track {
+        background: transparent;
+      }
+      .custom-scrollbar::-webkit-scrollbar-thumb {
+        background-color: rgba(100, 116, 139, 0.5);
+        border-radius: 3px;
+      }
+      .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+        background-color: rgba(100, 116, 139, 0.8);
+      }
+
+      /* Firefox Custom Scrollbar */
+      .custom-scrollbar {
+        scrollbar-width: thin;
+        scrollbar-color: rgba(100, 116, 139, 0.5) transparent;
+      }
+    </style>
     <!-- Chart.js CDN -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <link
@@ -145,7 +178,7 @@
 
         <!-- Budgets this month -->
         <div
-          class="bg-white dark:bg-slate-800 p-2.5 rounded-xl shadow-sm border border-slate-200 dark:border-slate-700 flex flex-col transition-colors duration-200 min-h-[7.5rem]"
+          class="bg-white dark:bg-slate-800 p-2.5 rounded-xl shadow-sm border border-slate-200 dark:border-slate-700 flex flex-col transition-colors duration-200 min-h-[8.4rem] max-h-[8.4rem]"
         >
           <!-- Header Row -->
           <div class="flex justify-between items-center mb-2">
@@ -166,7 +199,7 @@
           <!-- Budgets List -->
           <div
             id="budgets-list"
-            class="flex-1 overflow-y-auto max-h-28 space-y-2 text-sm"
+            class="flex-1 overflow-y-auto max-h-28 space-y-2 text-sm pr-1"
           >
             <!-- Sample List -->
             <!-- <div class="flex flex-col gap-0.5">
@@ -349,7 +382,9 @@
                 </option>
               </select>
             </div>
-            <div class="overflow-x-auto max-h-72 overflow-y-auto">
+            <div
+              class="overflow-x-auto max-h-72 overflow-y-auto custom-scrollbar"
+            >
               <table class="w-full text-left border-collapse">
                 <thead>
                   <tr
@@ -637,7 +672,7 @@
               id="add-budget-btn"
               class="w-full bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-medium py-2 rounded-lg transition"
             >
-              Add budget
+              Add Budget
             </button>
           </div>
         </div>

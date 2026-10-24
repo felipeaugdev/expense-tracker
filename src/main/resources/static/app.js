@@ -1062,7 +1062,7 @@ function renderBudgetsInModal(budgets) {
         value="${b.limit}"
         data-id="${b.id}"
         data-category="${b.category}"
-        class="budget-amount-input w-24 px-2 py-1 text-sm border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-700 rounded-lg text-right"
+        class="budget-amount-input w-24 px-2 py-1 text-sm border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-700 rounded-lg text-right focus:outline-none focus:ring-0"
       />
       <button
         type="button"
