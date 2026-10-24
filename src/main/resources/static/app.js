@@ -239,6 +239,19 @@ document.addEventListener("DOMContentLoaded", () => {
       }
     });
 
+  document
+    .getElementById("edit-budgets-btn")
+    ?.addEventListener("click", openBudgetsModal);
+  document
+    .getElementById("budgets-modal-close")
+    ?.addEventListener("click", closeBudgetsModal);
+  document
+    .getElementById("add-budget-btn")
+    ?.addEventListener("click", handleAddBudget);
+  document.getElementById("budgets-modal")?.addEventListener("click", (e) => {
+    if (e.target.id === "budgets-modal") closeBudgetsModal();
+  });
+
   updateAuthUI();
 });
 
@@ -951,4 +964,196 @@ function logout() {
   updateAuthUI();
   loadCategories();
   initDashboard();
+}
+
+// =============================
+// Add/Edit Budget Modal & Logic
+// =============================
+
+function openBudgetsModal() {
+  if (!authToken) {
+    alert("You must be logged in to manage budgets");
+    return;
+  }
+
+  const modal = document.getElementById("budgets-modal");
+  modal.classList.remove("hidden");
+  modal.classList.add("flex");
+
+  populateBudgetCategorySelect();
+  loadBudgetsForModal();
+}
+
+function closeBudgetsModal() {
+  const modal = document.getElementById("budgets-modal");
+  modal.classList.add("hidden");
+  modal.classList.remove("flex");
+}
+
+async function populateBudgetCategorySelect() {
+  const select = document.getElementById("budget-category");
+  if (!select) return;
+
+  try {
+    const response = await fetch("/api/categories", {
+      headers: getAuthHeaders(),
+    });
+    if (!response.ok) throw new Error("Failed to load categories");
+
+    const categories = await response.json();
+    const dict = TRANSLATIONS[currentLang];
+
+    select.innerHTML = "";
+    categories.forEach((cat) => {
+      const option = document.createElement("option");
+      option.value = cat.name;
+      option.textContent =
+        dict.categories[cat.name] ||
+        cat.name.charAt(0).toUpperCase() + cat.name.slice(1).toLowerCase();
+      select.appendChild(option);
+    });
+  } catch (err) {
+    console.error(err);
+  }
+}
+
+async function loadBudgetsForModal() {
+  const container = document.getElementById("budgets-modal-list");
+  if (!container) return;
+
+  try {
+    const response = await fetch("/api/budgets", {
+      headers: getAuthHeaders(),
+    });
+    if (!response.ok) throw new Error("Failed to load budgets");
+
+    const budgets = await response.json();
+    renderBudgetsInModal(budgets);
+  } catch (err) {
+    console.error(err);
+    container.innerHTML = `<p class="text-sm text-slate-400">Could not load budgets</p>`;
+  }
+}
+
+function renderBudgetsInModal(budgets) {
+  const container = document.getElementById("budgets-modal-list");
+  const dict = TRANSLATIONS[currentLang];
+
+  container.innerHTML = "";
+
+  if (!budgets || budgets.length === 0) {
+    container.innerHTML = `<p class="text-sm text-slate-400 dark:text-slate-500">No budgets yet</p>`;
+    return;
+  }
+
+  budgets.forEach((b) => {
+    const categoryName =
+      dict.categories[b.category] ||
+      category.charAt(0).toUpperCase() + b.category.slice(1).toLowerCase();
+
+    const row = document.createElement("div");
+    row.className = "flex items-center gap-2";
+    row.innerHTML = `
+      <span class="flex-1 text-sm font-medium text-slate-700 dark:text-slate-300">
+        ${categoryName}
+      </span>
+      <input
+        type="text"
+        value="${b.limit}"
+        data-id="${b.id}"
+        data-category="${b.category}"
+        class="budget-amount-input w-24 px-2 py-1 text-sm border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-700 rounded-lg text-right"
+      />
+      <button
+        type="button"
+        data-id="${b.id}"
+        class="delete-budget-btn text-rose-500 hover:text-rose-700 text-sm px-1"
+        title="Delete"
+      >
+        ✕
+      </button>
+    `;
+    container.appendChild(row);
+  });
+
+  // Listeners
+  container.querySelectorAll(".budget-amount-input").forEach((input) => {
+    input.addEventListener("change", handleBudgetAmountChange);
+  });
+
+  container.querySelectorAll(".delete-budget-btn").forEach((btn) => {
+    btn.addEventListener("click", handleDeleteBudget);
+  });
+}
+
+async function handleBudgetAmountChange(e) {
+  const input = e.target;
+  const amount = parseAmount(input.value);
+  const category = input.dataset.category;
+
+  if (amount === null || amount <= 0) {
+    alert("Please enter a valid positive amount");
+    return;
+  }
+
+  try {
+    const response = await fetch("/api/budgets", {
+      method: "POST",
+      headers: getAuthHeaders(),
+      body: JSON.stringify({ category, amount }),
+    });
+
+    if (!response.ok) throw new Error("Failed to update budget");
+
+    await loadBudgets();
+    await loadBudgetsForModal();
+  } catch (err) {
+    alert("Error updating budget: " + err.message);
+  }
+}
+
+async function handleDeleteBudget(e) {
+  const id = e.target.dataset.id;
+  if (!confirm("Delete this budget?")) return;
+
+  try {
+    const response = await fetch(`/api/budgets/${id}`, {
+      method: "DELETE",
+      headers: getAuthHeaders(),
+    });
+
+    if (!response.ok) throw new Error("Failed to delete budget");
+
+    await loadBudgets();
+    await loadBudgetsForModal();
+  } catch (err) {
+    console.error("Error deleting budget: " + err.message);
+  }
+}
+
+async function handleAddBudget() {
+  const category = document.getElementById("budget-category").value;
+  const rawAmount = document.getElementById("budget-amount").value;
+  const amount = parseAmount(rawAmount);
+
+  if (amount === null || amount <= 0) {
+    alert("Please enter a valid positive amount");
+    return;
+  }
+
+  try {
+    const response = await fetch("/api/budgets", {
+      method: "POST",
+      headers: getAuthHeaders(),
+      body: JSON.stringify({ category, amount }),
+    });
+
+    if (!response.ok) throw new Error("Failed to create budget");
+
+    document.getElementById("budget-amount").value = "";
+    await loadBudgets();
+    await loadBudgetsForModal();
+  } catch (err) {
+    alert("Error creating budget: " + err.message);
+  }
 }
