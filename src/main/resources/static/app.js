@@ -676,6 +676,7 @@ async function loadBudgets() {
 
 function renderBudgets(budgets) {
   const list = document.getElementById("budgets-list");
+  const warning = document.getElementById("budgets-warning");
   const dict = TRANSLATIONS[currentLang];
 
   list.innerHTML = "";
@@ -685,7 +686,28 @@ function renderBudgets(budgets) {
       <p class="text-xs text-slate-400 dark:text-slate-500 text-center py-4">
         No budgets set yet
       </p>`;
+    if (warning) warning.classList.add("hidden");
     return;
+  }
+
+  budgets.sort((a, b) => b.percentage - a.percentage);
+
+  const overBudget = budgets.filter((b) => b.percentage >= 100);
+  if (warning) {
+    if (overBudget.length > 0) {
+      const names = overBudget.map((b) => {
+        const name =
+          dict.categories[b.category] ||
+          b.category.charAt(0).toUpperCase() +
+            b.category.slice(1).toLowerCase();
+        return `${name} (${Math.round(b.percentage)}%)`;
+      });
+      warning.title = "Limit reached: " + names.join(", ");
+      warning.classList.remove("hidden");
+    } else {
+      warning.classList.add("hidden");
+      warning.title = "";
+    }
   }
 
   budgets.forEach((b) => {
