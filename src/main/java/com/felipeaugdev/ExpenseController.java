@@ -4,7 +4,9 @@ import java.math.BigDecimal;
 import java.util.Map;
 
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
@@ -59,11 +61,15 @@ public class ExpenseController {
         String sortDirection = sortParts.length > 1 ? sortParts[1] : "desc";
 
         var direction = sortDirection.equalsIgnoreCase("asc")
-                ? org.springframework.data.domain.Sort.Direction.ASC
-                : org.springframework.data.domain.Sort.Direction.DESC;
+                ? Sort.Direction.ASC
+                : Sort.Direction.DESC;
 
-        Pageable pageable = org.springframework.data.domain.PageRequest.of(
-                page, size, org.springframework.data.domain.Sort.by(direction, sortField));
+        Pageable pageable = PageRequest.of(
+                page,
+                size,
+                Sort.by(
+                        new Sort.Order(direction, sortField),
+                        Sort.Order.desc("id")));
 
         return expenseService.getExpenses(days, getCurrentUser(), pageable)
                 .map(ExpenseResponse::from);
