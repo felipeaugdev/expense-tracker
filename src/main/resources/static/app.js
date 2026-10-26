@@ -156,6 +156,9 @@ document.addEventListener("DOMContentLoaded", () => {
   document
     .getElementById("edit-modal-close")
     ?.addEventListener("click", closeEditModal);
+  document.getElementById("edit-modal")?.addEventListener("click", (e) => {
+    if (e.target.id === "edit-modal") closeEditModal();
+  });
   document
     .getElementById("edit-form")
     ?.addEventListener("submit", handleEditSubmit);
@@ -245,12 +248,12 @@ document.addEventListener("DOMContentLoaded", () => {
   document
     .getElementById("budgets-modal-close")
     ?.addEventListener("click", closeBudgetsModal);
-  document
-    .getElementById("add-budget-btn")
-    ?.addEventListener("click", handleAddBudget);
   document.getElementById("budgets-modal")?.addEventListener("click", (e) => {
     if (e.target.id === "budgets-modal") closeBudgetsModal();
   });
+  document
+    .getElementById("add-budget-btn")
+    ?.addEventListener("click", handleAddBudget);
 
   updateAuthUI();
 });

@@ -2,6 +2,7 @@ package com.felipeaugdev;
 
 import java.math.BigDecimal;
 import java.util.Map;
+import java.util.Objects;
 
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -68,7 +69,7 @@ public class ExpenseController {
                 page,
                 size,
                 Sort.by(
-                        new Sort.Order(direction, sortField),
+                        new Sort.Order(direction, Objects.requireNonNull(sortField)),
                         Sort.Order.desc("id")));
 
         return expenseService.getExpenses(days, getCurrentUser(), pageable)
