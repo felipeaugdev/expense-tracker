@@ -505,7 +505,7 @@ async function loadTransactions(days = "") {
           exp.category.slice(1).toLowerCase();
 
       tr.innerHTML = `
-        <td class="py-3 font-mono text-xs text-slate-500 dark:text-slate-400">${exp.date || "N/A"}</td>
+        <td class="py-3 font-mono text-xs text-slate-500 dark:text-slate-400">${formatDate(exp.date) || "N/A"}</td>
         <td class="py-3 font-medium text-slate-800 dark:text-slate-200">${exp.description}</td>
         <td class="py-3"><span class="px-2 py-1 rounded text-xs font-semibold bg-slate-100 dark:bg-slate-700 text-slate-700 dark:text-slate-300">${localizedCategory}</span></td>
         <td class="py-3 text-right font-bold text-slate-900 dark:text-slate-100">${formatCurrency(exp.amount)}</td>
@@ -748,6 +748,15 @@ function formatCurrency(amount) {
     style: "currency",
     currency: currentCurrency,
   }).format(amount);
+}
+
+function formatDate(isoDate) {
+  if (!isoDate) return "N/A";
+  const [year, month, day] = isoDate.split("-");
+  if (currentLang === "pt") {
+    return `${day}/${month}/${year}`;
+  }
+  return `${month}/${day}/${year}`;
 }
 
 /**
