@@ -655,9 +655,14 @@ async function loadBudgets() {
 
   if (!authToken) {
     list.innerHTML = `
-      <p class="text-xs text-slate-400 dark:text-slate-500 text-center py-4">
+      <p class="text-xs text-slate-400 dark:text-slate-500 text-center py-7">
         No budgets set yet
       </p>`;
+    const warning = document.getElementById("budgets-warning");
+    if (warning) {
+      warning.classList.add("hidden");
+      warning.title = "";
+    }
     return;
   }
 
@@ -683,7 +688,7 @@ function renderBudgets(budgets) {
 
   if (!budgets || budgets.length === 0) {
     list.innerHTML = `
-      <p class="text-xs text-slate-400 dark:text-slate-500 text-center py-4">
+      <p class="text-xs text-slate-400 dark:text-slate-500 text-center py-7">
         No budgets set yet
       </p>`;
     if (warning) warning.classList.add("hidden");
