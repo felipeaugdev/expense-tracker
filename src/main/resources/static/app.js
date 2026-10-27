@@ -136,6 +136,10 @@ if (!currentTheme) {
 let authToken = localStorage.getItem("jwt_token") || null;
 let currentUser = localStorage.getItem("current_user") || null;
 
+let loadedExpenses = [];
+let currentPage = 0;
+let hasMore = false;
+
 document.addEventListener("DOMContentLoaded", () => {
   applyTheme();
   setupSettingsUI();
@@ -173,6 +177,14 @@ document.addEventListener("DOMContentLoaded", () => {
       }
     });
   }
+
+  document
+    .getElementById("show-more-btn")
+    ?.addEventListener("click", async () => {
+      currentPage += 1;
+      const days = document.getElementById("filter-days").value;
+      await loadTransactions(days, true);
+    });
 
   document
     .getElementById("auth-modal-close")
@@ -474,25 +486,43 @@ function renderChart(labels, data) {
   });
 }
 
-async function loadTransactions(days = "") {
+async function loadTransactions(days = "", append = false) {
   try {
-    const url = days ? `${API_BASE_URL}?days=${days}` : API_BASE_URL;
+    const tbody = document.getElementById("expense-table-body");
+    const showMoreBtn = document.getElementById("show-more-btn");
+    const dict = TRANSLATIONS[currentLang];
+
+    const scrollContainer = tbody.closest(".overflow-y-auto");
+    const previousScrollTop =
+      append && scrollContainer ? scrollContainer.scrollTop : 0;
+
+    if (!append) {
+      loadedExpenses = [];
+      currentPage = 0;
+      tbody.innerHTML = "";
+    }
+
+    const params = new URLSearchParams();
+    if (days) params.set("days", days);
+    params.set("page", currentPage);
+    params.set("size", 20);
+
+    const url = `${API_BASE_URL}?${params.toString()}`;
     const response = await fetch(url, {
       headers: getAuthHeaders(),
     });
     if (!response.ok) throw new Error("Failed to fetch transactions");
+
     const page = await response.json();
     const expenses = page.content || [];
+    hasMore = !page.last;
 
-    const tbody = document.getElementById("expense-table-body");
-    const dict = TRANSLATIONS[currentLang];
-    tbody.innerHTML = "";
-
-    if (expenses.length === 0) {
+    if (expenses.length === 0 && !append) {
       tbody.innerHTML = `
         <tr>
-            <td colspan="5" class="py-4 text-center text-slate-400 dark:text-slate-500">${dict.noTransactions}</td>
+          <td colspan="5" class="py-4 text-center text-slate-400 dark:text-slate-500">${dict.noTransactions}</td>
         </tr>`;
+      if (showMoreBtn) showMoreBtn.classList.add("hidden");
       return;
     }
 
@@ -507,7 +537,11 @@ async function loadTransactions(days = "") {
       tr.innerHTML = `
         <td class="py-3 font-mono text-xs text-slate-500 dark:text-slate-400">${formatDate(exp.date) || "N/A"}</td>
         <td class="py-3 font-medium text-slate-800 dark:text-slate-200">${exp.description}</td>
-        <td class="py-3"><span class="px-2 py-1 rounded text-xs font-semibold bg-slate-100 dark:bg-slate-700 text-slate-700 dark:text-slate-300">${localizedCategory}</span></td>
+        <td class="py-3">
+          <span class="px-2 py-1 rounded text-xs font-semibold bg-slate-100 dark:bg-slate-700 text-slate-700 dark:text-slate-300">
+            ${localizedCategory}
+          </span>
+        </td>
         <td class="py-3 text-right font-bold text-slate-900 dark:text-slate-100">${formatCurrency(exp.amount)}</td>
         <td class="py-3 text-center space-x-2">
           <button
@@ -527,15 +561,25 @@ async function loadTransactions(days = "") {
       tbody.appendChild(tr);
     });
 
+    loadedExpenses = append ? loadedExpenses.concat(expenses) : expenses;
+
     document.querySelectorAll(".edit-btn").forEach((btn) => {
-      btn.addEventListener("click", () => {
+      btn.onclick = () => {
         const id = Number(btn.dataset.id);
-        const expense = expenses.find((e) => e.id === id);
-        if (expense) {
-          openEditModal(expense);
-        }
-      });
+        const expense = loadedExpenses.find((e) => e.id === id);
+        if (expense) openEditModal(expense);
+      };
     });
+
+    if (showMoreBtn) {
+      showMoreBtn.classList.toggle("hidden", !hasMore);
+    }
+
+    if (append && scrollContainer) {
+      requestAnimationFrame(() => {
+        scrollContainer.scrollTop = previousScrollTop;
+      });
+    }
   } catch (err) {
     console.error("Error loading transactions:", err);
   }
