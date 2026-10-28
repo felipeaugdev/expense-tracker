@@ -53,6 +53,10 @@ const TRANSLATIONS = {
       SHOPPING: "Shopping",
       OTHER: "Other",
     },
+    showMore: "Show more",
+    editBtn: "Edit",
+    editExpenseTitle: "Edit Expense",
+    saveChanges: "Save Changes",
     login: "Log In",
     register: "Register",
     usernameLabel: "Username",
@@ -65,6 +69,23 @@ const TRANSLATIONS = {
     invalidCredentials: "Invalid username or password",
     usernameTaken: "Username is already taken",
     registrationFailed: "Registration failed",
+    budgetsTitle: "Budgets",
+    setEditBudgets: "+ Set / Edit",
+    noBudgets: "No budgets set yet",
+    manageBudgets: "Manage Budgets",
+    addNewBudget: "Add new budget",
+    monthlyLimit: "Monthly Limit",
+    addBudget: "Add Budget",
+    deleteBudgetConfirm: "Delete this budget?",
+    mustBeLoggedInBudgets: "You must be logged in to manage budgets",
+    limitReached: "Limit reached",
+    couldNotLoadBudgets: "Could not load budgets",
+    newCategory: "+ New category",
+    categoryNamePlaceholder: "e.g. Gym",
+    addCategory: "Add",
+    cancel: "Cancel",
+    mustBeLoggedInCategory: "You must be logged in to create a category",
+    enterCategoryName: "Please enter a category name",
   },
   pt: {
     title: "Controle de Despesas",
@@ -105,6 +126,10 @@ const TRANSLATIONS = {
       SHOPPING: "Compras",
       OTHER: "Outros",
     },
+    showMore: "Mostrar mais",
+    editBtn: "Editar",
+    editExpenseTitle: "Editar Despesa",
+    saveChanges: "Salvar Alterações",
     login: "Entrar",
     register: "Registrar",
     usernameLabel: "Nome de usuário",
@@ -117,6 +142,25 @@ const TRANSLATIONS = {
     invalidCredentials: "Usuário ou senha inválidos",
     usernameTaken: "Nome de usuário já está em uso",
     registrationFailed: "Falha ao criar conta",
+    budgetsTitle: "Orçamentos",
+    setEditBudgets: "+ Definir / Editar",
+    noBudgets: "Nenhum orçamento definido",
+    manageBudgets: "Gerenciar Orçamentos",
+    addNewBudget: "Adicionar novo orçamento",
+    monthlyLimit: "Limite mensal",
+    addBudget: "Adicionar Orçamento",
+    deleteBudgetConfirm: "Excluir este orçamento?",
+    mustBeLoggedInBudgets:
+      "Você precisa estar logado para gerenciar orçamentos",
+    limitReached: "Limite atingido",
+    couldNotLoadBudgets: "Não foi possível carregar os orçamentos",
+    newCategory: "+ Nova categoria",
+    categoryNamePlaceholder: "ex: Academia",
+    addCategory: "Adicionar",
+    cancel: "Cancelar",
+    mustBeLoggedInCategory:
+      "Você precisa estar logado para criar uma categoria",
+    enterCategoryName: "Por favor, digite o nome da categoria",
   },
 };
 
@@ -223,14 +267,15 @@ document.addEventListener("DOMContentLoaded", () => {
   document
     .getElementById("add-category-btn")
     ?.addEventListener("click", async () => {
+      const dict = TRANSLATIONS[currentLang];
       const name = document.getElementById("new-category-name").value.trim();
       if (!name) {
-        alert("Please enter a category name");
+        alert(dict.enterCategoryName);
         return;
       }
 
       if (!authToken) {
-        alert("You must be logged in to create a category");
+        alert(dict.mustBeLoggedInCategory);
         return;
       }
 
@@ -339,6 +384,11 @@ function applyLanguage() {
         opt.text = dict.categories[opt.value];
       }
     });
+  }
+
+  const newCategoryInput = document.getElementById("new-category-name");
+  if (newCategoryInput) {
+    newCategoryInput.placeholder = dict.categoryNamePlaceholder;
   }
 
   updateAmountPlaceholder();
@@ -520,7 +570,7 @@ async function loadTransactions(days = "", append = false) {
     if (expenses.length === 0 && !append) {
       tbody.innerHTML = `
         <tr>
-          <td colspan="5" class="py-4 text-center text-slate-400 dark:text-slate-500">${dict.noTransactions}</td>
+          <td colspan="5" class="pt-8 text-center text-slate-400 dark:text-slate-500">${dict.noTransactions}</td>
         </tr>`;
       if (showMoreBtn) showMoreBtn.classList.add("hidden");
       return;
@@ -548,7 +598,7 @@ async function loadTransactions(days = "", append = false) {
             data-id="${exp.id}"
             class="edit-btn text-indigo-600 hover:text-indigo-800 dark:text-indigo-400 dark:hover:text-indigo-300 font-medium text-xs px-2 py-1 rounded hover:bg-indigo-50 dark:hover:bg-indigo-950/40 transition"
           >
-            Edit
+            ${dict.editBtn}
           </button>
           <button
             onclick="deleteExpense(${exp.id})"
@@ -700,7 +750,7 @@ async function loadBudgets() {
   if (!authToken) {
     list.innerHTML = `
       <p class="text-xs text-slate-400 dark:text-slate-500 text-center py-7">
-        No budgets set yet
+        ${TRANSLATIONS[currentLang].noBudgets}
       </p>`;
     const warning = document.getElementById("budgets-warning");
     if (warning) {
@@ -733,7 +783,7 @@ function renderBudgets(budgets) {
   if (!budgets || budgets.length === 0) {
     list.innerHTML = `
       <p class="text-xs text-slate-400 dark:text-slate-500 text-center py-7">
-        No budgets set yet
+        ${TRANSLATIONS[currentLang].noBudgets}
       </p>`;
     if (warning) warning.classList.add("hidden");
     return;
@@ -751,7 +801,7 @@ function renderBudgets(budgets) {
             b.category.slice(1).toLowerCase();
         return `${name} (${Math.round(b.percentage)}%)`;
       });
-      warning.title = "Limit reached: " + names.join(", ");
+      warning.title = dict.limitReached + ": " + names.join(", ");
       warning.classList.remove("hidden");
     } else {
       warning.classList.add("hidden");
@@ -1055,7 +1105,7 @@ function logout() {
 
 function openBudgetsModal() {
   if (!authToken) {
-    alert("You must be logged in to manage budgets");
+    alert(TRANSLATIONS[currentLang].mustBeLoggedInBudgets);
     return;
   }
 
@@ -1125,7 +1175,7 @@ function renderBudgetsInModal(budgets) {
   container.innerHTML = "";
 
   if (!budgets || budgets.length === 0) {
-    container.innerHTML = `<p class="text-sm text-slate-400 dark:text-slate-500">No budgets yet</p>`;
+    container.innerHTML = `<p class="text-sm text-slate-400 dark:text-slate-500">${dict.noBudgets}</p>`;
     return;
   }
 
@@ -1151,7 +1201,7 @@ function renderBudgetsInModal(budgets) {
         type="button"
         data-id="${b.id}"
         class="delete-budget-btn text-rose-500 hover:text-rose-700 text-sm px-1"
-        title="Delete"
+        title="${TRANSLATIONS[currentLang].deleteBtn}"
       >
         ✕
       </button>
@@ -1175,7 +1225,7 @@ async function handleBudgetAmountChange(e) {
   const category = input.dataset.category;
 
   if (amount === null || amount <= 0) {
-    alert("Please enter a valid positive amount");
+    alert(TRANSLATIONS[currentLang].invalidAmount);
     return;
   }
 
@@ -1197,7 +1247,7 @@ async function handleBudgetAmountChange(e) {
 
 async function handleDeleteBudget(e) {
   const id = e.target.dataset.id;
-  if (!confirm("Delete this budget?")) return;
+  if (!confirm(TRANSLATIONS[currentLang].deleteBudgetConfirm)) return;
 
   try {
     const response = await fetch(`/api/budgets/${id}`, {
@@ -1220,7 +1270,7 @@ async function handleAddBudget() {
   const amount = parseAmount(rawAmount);
 
   if (amount === null || amount <= 0) {
-    alert("Please enter a valid positive amount");
+    alert(TRANSLATIONS[currentLang].invalidAmount);
     return;
   }
 
