@@ -22,10 +22,11 @@ A full-stack personal expense tracking application with real-time analytics. Bui
 - **Web Dashboard:** Interactive single-page dashboard displaying real-time monthly metrics, spending category charts, and a transaction table.
 - **Expense Management:** Full CRUD operations for creating, viewing, and deleting expense records.
 - **Date Range Filtering:** Filter transactions by rolling time windows (e.g., last 7, 14, or 30 days).
-- **Category Breakdown:** Aggregated spending totals grouped by expense category.
+- **Category Breakdown:** Aggregated spending totals grouped by expense category. Also supports custom categories (requires login).
 - **Month-over-Month Reports:** Comparative analysis between current and previous calendar month spending.
-- **Dockerized Environment:** Multi-stage Docker build packaging both Spring Boot backend and MariaDB database via Docker Compose.
 - **Optional User Accounts:** Register / login with JWT authentication. Expenses are isolated per user while guest mode remains fully functional.
+- **Monthly Budgets:** Set per-category spending limits, track progress with visual bars, and get warned when a limit is reached (requires login).
+- **Dockerized Environment:** Multi-stage Docker build packaging both Spring Boot backend and MariaDB database via Docker Compose.
 - **Secure API:** Spring Security + JJWT protect authenticated endpoints while keeping public access for guests.
 - **API Documentation:** Interactive Swagger UI generated via SpringDoc OpenAPI.
 
@@ -43,17 +44,23 @@ A full-stack personal expense tracking application with real-time analytics. Bui
 
 | Method | Endpoint | Description |
 | :--- | :--- | :--- |
-| `GET` | `/api/expenses` | Fetch all expenses (supports optional `?days=N` query param) |
-| `POST` | `/api/expenses` | Create a new expense |
-| `DELETE` | `/api/expenses/{id}` | Delete an expense by ID |
-| `GET` | `/api/expenses/category-totals` | Get spending aggregated by category |
-| `GET` | `/api/expenses/monthly-report` | Get month-over-month report metrics |
+| `GET`    | `/api/expenses`          | Fetch all expenses (supports optional `?days=N` query param) |
+| `POST`   | `/api/expenses`          | Create a new expense |
+| `PUT`    | `/api/expenses/{id}`     | Update an existing expense |
+| `DELETE` | `/api/expenses/{id}`     | Delete an expense by ID |
+| `GET`    | `/api/expenses/category-totals` | Get spending aggregated by category |
+| `GET`    | `/api/expenses/monthly-report` | Get month-over-month report metrics |
+| `GET`    | `/api/categories`        | List system + user categories |
+| `POST`   | `/api/categories`        | Create a custom category (auth required) |
+| `GET`    | `/api/budgets`           | List budgets for the current user |
+| `POST`   | `/api/budgets`           | Create or update a budget |
+| `DELETE` | `/api/budgets/{id}`      | Delete a budget |
 
 ### Authentication Endpoints
 | Method | Endpoint | Description |
 | :--- | :--- | :--- |
 | `POST` | `/api/auth/register` | Create a new user account |
-| `POST` | `/api/auth/login` | Obtain a JWT token |
+| `POST` | `/api/auth/login`    | Obtain a JWT token |
 
 ## Getting Started
 
@@ -84,6 +91,15 @@ A full-stack personal expense tracking application with real-time analytics. Bui
    docker compose down
    ```
    *(Run `docker compose down -v` to also remove the persistent database volume.)*
+
+### Alternative: One-click start scripts
+
+Instead of typing Docker commands, you can use the provided scripts:
+
+- **Windows:** double-click `start.bat`
+- **Linux:** run `./start.sh` in a terminal (or right-click → “Run in Terminal”)
+
+The script starts the stack, waits until the app is ready, opens the browser, and stops everything automatically when you close the terminal.
 
 ## Running Tests
 

@@ -4,14 +4,18 @@
 This expense tracker was built primarily with Java. It uses Spring Boot and JPA for business logic and data persistence, exposing REST endpoints that feed a JavaScript/HTML front-end interface.
 
 ## Month 1 Recap
-* **Initial Concept:** This project originally started as a simple CLI application. My purpose was to learn and demonstrate back-end logic, as well as some programming concepts like loose coupling, separation of responsibilities, etc.
+* **Initial Concept:** This project originally started as just a simple CLI application. My purpose was to learn and demonstrate back-end logic, as well as some programming concepts like loose coupling, separation of responsibilities, etc.
 * **Overhaul:** After adding extra functionality and migrating a lot of the verbose logic to Spring Boot, I started seeing this application as more than just an exercise in back-end programming. That's when I decided to simplify the user experience by containerizing the whole thing in Docker and even adding a Web UI.
-* **Current State:** The app now handles CRUD operations through a visual interface with full dark mode support, localization (EN/PT-BR), and currency switching (USD/BRL). All the information is available at a glance, including an expense table and a category chart (using MariaDB, Chart.js, and Tailwind CSS). Data flows from the front-end UI, through REST endpoints, down to the repository layer.
+* **Current State:** The app now handles CRUD operations through a visual interface. All the information is available at a glance, including an expense table and a category chart (using MariaDB, Chart.js, and Tailwind CSS). It features optional user accounts with JWT, custom category, monthly budgets with progress tracking, pagination, dark mode, EN/PT-BR localization, and USD/BRL currency switching. Data flows from the front-end UI, through REST endpoints, down to the repository layer. 
 * **AI Usage Note:** Built with AI assistance for code implementation and boilerplate generation. But the architecture, data modeling, feature scope and debugging are directed manually.
 
 ---
 
 ## Dev Log
+
+### [October 20–28, 2026] - Categories as Entity + Monthly Budgets + UX polish
+* **What changed:** Categories moved from a fixed enum to a real `Category` table (system categories + user-created ones). Added monthly budget limits per category with progress bars and over-budget warnings. Implemented progressive "Show more" pagination, improved date/amount localization, completed Portuguese translations, and added one-click start scripts for Windows and Linux.
+* **Why:** This update is huge. I polished the back-end, added some much needed pagination to the front-end, and improved the user experienced with several useful features.
 
 ### [October 16-19, 2026] - Pagination and Sorting (Backend)
 * **What changed:** The REST Controller now accepts pagination and sorting parameters. The Service layer was also refactored appropriately. All parameters can be easily viewed and changed in Swagger.
