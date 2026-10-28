@@ -8,11 +8,11 @@ A full-stack personal expense tracking application with real-time analytics. Bui
 
 ## Screenshots
 
-### Dashboard (Light Mode)
-![Dashboard Light](screenshots/dashboard-light.png)
-
 ### Dashboard (Dark Mode)
 ![Dashboard Dark](screenshots/dashboard-dark.png)
+
+### Dashboard (Light Mode)
+![Dashboard Light](screenshots/dashboard-light.png)
 
 ### Authentication Modal
 ![Auth Modal](screenshots/auth-modal.png)
