@@ -252,6 +252,11 @@ document.addEventListener("DOMContentLoaded", () => {
   document
     .getElementById("show-new-category")
     ?.addEventListener("click", () => {
+      if (!authToken) {
+        alert(TRANSLATIONS[currentLang].mustBeLoggedInCategory);
+        return;
+      }
+
       document.getElementById("category").classList.add("hidden");
       document.getElementById("show-new-category").classList.add("hidden");
       document.getElementById("new-category-form").classList.remove("hidden");
@@ -267,15 +272,9 @@ document.addEventListener("DOMContentLoaded", () => {
   document
     .getElementById("add-category-btn")
     ?.addEventListener("click", async () => {
-      const dict = TRANSLATIONS[currentLang];
       const name = document.getElementById("new-category-name").value.trim();
       if (!name) {
-        alert(dict.enterCategoryName);
-        return;
-      }
-
-      if (!authToken) {
-        alert(dict.mustBeLoggedInCategory);
+        alert(TRANSLATIONS[currentLang].enterCategoryName);
         return;
       }
 
@@ -696,8 +695,6 @@ async function loadCategories() {
   } catch (err) {
     console.error("Error loading categories:", err);
   }
-
-  updateNewCategoryVisibility();
 }
 
 function populateCategorySelects(categories) {
@@ -735,12 +732,6 @@ function hideNewCategoryForm() {
   document.getElementById("category").classList.remove("hidden");
   document.getElementById("show-new-category").classList.remove("hidden");
   document.getElementById("new-category-name").value = "";
-}
-
-function updateNewCategoryVisibility() {
-  const btn = document.getElementById("show-new-category");
-  if (!btn) return;
-  btn.classList.toggle("hidden", !authToken);
 }
 
 async function loadBudgets() {
@@ -957,8 +948,6 @@ function updateAuthUI() {
     );
     authButton.classList.add("bg-indigo-600", "hover:bg-indigo-700");
   }
-
-  updateNewCategoryVisibility();
 }
 
 function openAuthModal() {
