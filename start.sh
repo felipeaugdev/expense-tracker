@@ -19,7 +19,7 @@ xdg-open http://localhost:8080 2>/dev/null || open http://localhost:8080 2>/dev/
 echo
 echo "App is running at http://localhost:8080"
 echo
-echo "Press Enter (or close this terminal) to stop the app..."
+echo "Press Enter to stop the app..."
 read
 
 echo

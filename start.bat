@@ -20,7 +20,7 @@ start http://localhost:8080
 echo.
 echo App is running at http://localhost:8080
 echo.
-echo Press any key (or close this window) to stop the app...
+echo Press any key to stop the app...
 pause >nul
 
 echo.
