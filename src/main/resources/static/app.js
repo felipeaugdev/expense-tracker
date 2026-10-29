@@ -460,8 +460,9 @@ async function loadCategoryTotals(days = "") {
     if (!response.ok) throw new Error("Failed to fetch category totals");
     const totals = await response.json();
 
-    const labels = Object.keys(totals);
-    const data = Object.values(totals);
+    const sorted = Object.entries(totals).sort((a, b) => b[1] - a[1]);
+    const labels = sorted.map(([key]) => key);
+    const data = sorted.map(([, value]) => value);
 
     renderChart(labels, data);
   } catch (err) {
