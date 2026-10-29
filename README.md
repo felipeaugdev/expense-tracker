@@ -99,7 +99,7 @@ Instead of typing Docker commands, you can use the provided scripts:
 - **Windows:** double-click `start.bat`
 - **Linux:** run `./start.sh` in a terminal (or right-click → “Run in Terminal”)
 
-The script starts the stack, waits until the app is ready, opens the browser, and stops everything automatically when you close the terminal.
+The script starts the stack, waits until the app is ready, opens the browser, and stops everything automatically when you press any key (Windows) or Enter (Linux) in the terminal.
 
 ## Running Tests
 
