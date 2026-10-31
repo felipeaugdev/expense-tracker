@@ -180,6 +180,13 @@ if (!currentTheme) {
 let authToken = localStorage.getItem("jwt_token") || null;
 let currentUser = localStorage.getItem("current_user") || null;
 
+if (authToken && isTokenExpired(authToken)) {
+  authToken = null;
+  currentUser = null;
+  localStorage.removeItem("jwt_token");
+  localStorage.removeItem("current_user");
+}
+
 let loadedExpenses = [];
 let currentPage = 0;
 let hasMore = false;
@@ -1087,6 +1094,16 @@ function logout() {
   updateAuthUI();
   loadCategories();
   initDashboard();
+}
+
+function isTokenExpired(token) {
+  if (!token) return true;
+  try {
+    const payload = JSON.parse(atob(token.split(".")[1]));
+    return payload.exp * 1000 < Date.now();
+  } catch {
+    return true;
+  }
 }
 
 // =============================
