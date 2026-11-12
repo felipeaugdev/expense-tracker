@@ -271,6 +271,7 @@ public class ExpenseService {
                 LocalDate date = LocalDate.parse(parts[0].trim());
                 String description = parts[1].trim();
                 String categoryName = parts[2].trim().toUpperCase();
+                String finalCategory = categoryName;
                 BigDecimal amount = new BigDecimal(parts[3].trim());
 
                 if (amount.compareTo(BigDecimal.ZERO) <= 0 || description.isEmpty()) {
@@ -278,7 +279,11 @@ public class ExpenseService {
                     continue;
                 }
 
-                addExpense(amount, description, categoryName, user, false, null, date);
+                if (categoryRepository.findByName(categoryName).isEmpty()) {
+                    finalCategory = "OTHER";
+                }
+
+                addExpense(amount, description, finalCategory, user, false, null, date);
                 added++;
 
             } catch (Exception e) {
