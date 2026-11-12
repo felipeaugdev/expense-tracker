@@ -80,6 +80,10 @@ public class ExpenseService {
                 filtered.size());
     }
 
+    public List<Expense> getExpensesForExport(User user) {
+        return getAllExpenses(user);
+    }
+
     public Expense updateExpense(int id, ExpenseUpdateRequest request, User currentUser) {
         Expense expense = repository.findById(id)
                 .filter(e -> belongsToUser(e, currentUser))
