@@ -4,6 +4,7 @@ import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.time.LocalDate;
 import java.time.YearMonth;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -15,6 +16,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 import com.felipeaugdev.dto.ExpenseUpdateRequest;
+import com.felipeaugdev.dto.ImportResult;
 
 @Service
 public class ExpenseService {
@@ -33,12 +35,14 @@ public class ExpenseService {
     }
 
     public Expense addExpense(BigDecimal amount, String description, String categoryName,
-            User user, boolean recurring, Integer frequencyDays) {
+            User user, boolean recurring, Integer frequencyDays, LocalDate date) {
 
         Category category = categoryRepository.findByName(categoryName)
                 .orElseThrow(() -> new RuntimeException("Category not found: " + categoryName));
 
-        Expense newExpense = new Expense(amount, LocalDate.now(), description, category, user);
+        LocalDate expenseDate = (date != null) ? date : LocalDate.now();
+
+        Expense newExpense = new Expense(amount, expenseDate, description, category, user);
         Expense saved = repository.save(newExpense);
 
         if (recurring && frequencyDays != null && frequencyDays > 0) {
@@ -78,10 +82,6 @@ public class ExpenseService {
                 Objects.requireNonNull(pageContent),
                 pageable,
                 filtered.size());
-    }
-
-    public List<Expense> getExpensesForExport(User user) {
-        return getAllExpenses(user);
     }
 
     public Expense updateExpense(int id, ExpenseUpdateRequest request, User currentUser) {
@@ -236,6 +236,78 @@ public class ExpenseService {
         return new MonthOverMonthReport(previousMonth, currentMonth,
                 previousTotal, currentTotal,
                 difference, percentageChange);
+    }
+
+    public List<Expense> getExpensesForExport(User user) {
+        return getAllExpenses(user);
+    }
+
+    public ImportResult importFromCsv(String csvContent, User user) {
+        int added = 0;
+        int failed = 0;
+
+        String[] lines = csvContent.split("\\r?\\n");
+
+        // Skip header if present
+        int startIndex = 0;
+        if (lines.length > 0 && lines[0].toLowerCase().contains("date")
+                && lines[0].toLowerCase().contains("amount")) {
+            startIndex = 1;
+        }
+
+        for (int i = startIndex; i < lines.length; i++) {
+            String line = lines[i].trim();
+            if (line.isEmpty())
+                continue;
+
+            try {
+                String[] parts = parseCsvLine(line);
+
+                if (parts.length < 4) {
+                    failed++;
+                    continue;
+                }
+
+                LocalDate date = LocalDate.parse(parts[0].trim());
+                String description = parts[1].trim();
+                String categoryName = parts[2].trim().toUpperCase();
+                BigDecimal amount = new BigDecimal(parts[3].trim());
+
+                if (amount.compareTo(BigDecimal.ZERO) <= 0 || description.isEmpty()) {
+                    failed++;
+                    continue;
+                }
+
+                addExpense(amount, description, categoryName, user, false, null, date);
+                added++;
+
+            } catch (Exception e) {
+                failed++;
+            }
+        }
+
+        return new ImportResult(added, failed);
+    }
+
+    private String[] parseCsvLine(String line) {
+        List<String> result = new ArrayList<>();
+        StringBuilder current = new StringBuilder();
+        boolean inQuotes = false;
+
+        for (int i = 0; i < line.length(); i++) {
+            char c = line.charAt(i);
+
+            if (c == '"') {
+                inQuotes = !inQuotes;
+            } else if (c == ',' && !inQuotes) {
+                result.add(current.toString());
+                current = new StringBuilder();
+            } else {
+                current.append(c);
+            }
+        }
+        result.add(current.toString());
+        return result.toArray(new String[0]);
     }
 
     private List<Expense> filterByUser(List<Expense> expenses, User user) {
