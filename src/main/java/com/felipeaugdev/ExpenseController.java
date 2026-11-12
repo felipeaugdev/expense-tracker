@@ -1,5 +1,6 @@
 package com.felipeaugdev;
 
+import java.io.IOException;
 import java.math.BigDecimal;
 import java.nio.charset.StandardCharsets;
 import java.util.List;
@@ -17,10 +18,12 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
 import com.felipeaugdev.dto.ExpenseCreateRequest;
 import com.felipeaugdev.dto.ExpenseResponse;
 import com.felipeaugdev.dto.ExpenseUpdateRequest;
+import com.felipeaugdev.dto.ImportResult;
 
 import jakarta.validation.Valid;
 
@@ -90,7 +93,8 @@ public class ExpenseController {
                 request.getCategory(),
                 getCurrentUser(),
                 request.isRecurring(),
-                request.getFrequencyDays());
+                request.getFrequencyDays(),
+                null);
         return ExpenseResponse.from(saved);
     }
 
@@ -147,6 +151,16 @@ public class ExpenseController {
         headers.set(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"expenses.csv\"");
 
         return new ResponseEntity<>(csvBytes, headers, HttpStatus.OK);
+    }
+
+    @PostMapping(value = "/import", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    public ImportResult importExpenses(@RequestParam("file") MultipartFile file) throws IOException {
+        if (file.isEmpty()) {
+            throw new RuntimeException("File is empty");
+        }
+
+        String content = new String(file.getBytes(), StandardCharsets.UTF_8);
+        return expenseService.importFromCsv(content, getCurrentUser());
     }
 
     private String escapeCsv(String value) {
