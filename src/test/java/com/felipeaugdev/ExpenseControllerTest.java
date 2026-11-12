@@ -68,7 +68,7 @@ class ExpenseControllerTest {
         void testAddExpenseReturnsCreatedStatus() throws Exception {
                 Expense expense = new Expense(new BigDecimal("25.50"), LocalDate.now(), "Dinner", food);
                 when(expenseService.addExpense(any(BigDecimal.class), eq("Dinner"),
-                                eq("FOOD"), any(), anyBoolean(), any()))
+                                eq("FOOD"), any(), anyBoolean(), any(), any()))
                                 .thenReturn(expense);
 
                 ExpenseCreateRequest request = new ExpenseCreateRequest();
