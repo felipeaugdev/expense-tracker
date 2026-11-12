@@ -1,6 +1,8 @@
 package com.felipeaugdev;
 
 import java.math.BigDecimal;
+import java.nio.charset.StandardCharsets;
+import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 
@@ -8,7 +10,9 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -121,4 +125,36 @@ public class ExpenseController {
         return expenseService.getMonthOverMonthReport(getCurrentUser());
     }
 
+    @GetMapping("/export")
+    public ResponseEntity<byte[]> exportExpenses() {
+        User currentUser = getCurrentUser();
+        List<Expense> expenses = expenseService.getExpensesForExport(currentUser);
+
+        StringBuilder csv = new StringBuilder();
+        csv.append("Date,Description,Category,Amount\n");
+
+        for (Expense expense : expenses) {
+            csv.append(expense.getDate()).append(",")
+                    .append(escapeCsv(expense.getDescription())).append(",")
+                    .append(escapeCsv(expense.getCategory().getName())).append(",")
+                    .append(expense.getAmount()).append("\n");
+        }
+
+        byte[] csvBytes = csv.toString().getBytes(StandardCharsets.UTF_8);
+
+        HttpHeaders headers = new HttpHeaders();
+        headers.setContentType(MediaType.parseMediaType("text/csv"));
+        headers.set(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"expenses.csv\"");
+
+        return new ResponseEntity<>(csvBytes, headers, HttpStatus.OK);
+    }
+
+    private String escapeCsv(String value) {
+        if (value == null)
+            return "";
+        if (value.contains(",") || value.contains("\"") || value.contains("\n")) {
+            return "\"" + value.replace("\"", "\"\"") + "\"";
+        }
+        return value;
+    }
 }
