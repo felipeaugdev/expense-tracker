@@ -318,6 +318,19 @@ document.addEventListener("DOMContentLoaded", () => {
     });
 
   document
+    .getElementById("recurring-checkbox")
+    ?.addEventListener("change", (e) => {
+      document.getElementById("frequency-select").disabled = !e.target.checked;
+    });
+
+  document
+    .getElementById("edit-recurring-checkbox")
+    ?.addEventListener("change", (e) => {
+      document.getElementById("edit-frequency-select").disabled =
+        !e.target.checked;
+    });
+
+  document
     .getElementById("edit-budgets-btn")
     ?.addEventListener("click", openBudgetsModal);
   document
@@ -331,17 +344,26 @@ document.addEventListener("DOMContentLoaded", () => {
     ?.addEventListener("click", handleAddBudget);
 
   document
-    .getElementById("recurring-checkbox")
-    ?.addEventListener("change", (e) => {
-      document.getElementById("frequency-select").disabled = !e.target.checked;
+    .getElementById("export-import-btn")
+    ?.addEventListener("click", openExportImportModal);
+
+  document
+    .getElementById("export-import-modal-close")
+    ?.addEventListener("click", closeExportImportModal);
+
+  document
+    .getElementById("export-import-modal")
+    ?.addEventListener("click", (e) => {
+      if (e.target.id === "export-import-modal") closeExportImportModal();
     });
 
   document
-    .getElementById("edit-recurring-checkbox")
-    ?.addEventListener("change", (e) => {
-      document.getElementById("edit-frequency-select").disabled =
-        !e.target.checked;
-    });
+    .getElementById("export-csv-btn")
+    ?.addEventListener("click", handleExportCsv);
+
+  document
+    .getElementById("import-csv-btn")
+    ?.addEventListener("click", handleImportCsv);
 
   updateAuthUI();
 });
@@ -1376,5 +1398,81 @@ async function handleAddBudget() {
     await loadBudgetsForModal();
   } catch (err) {
     alert("Error creating budget: " + err.message);
+  }
+}
+
+// =====================
+// Export / Import Modal
+// =====================
+
+function openExportImportModal() {
+  const modal = document.getElementById("export-import-modal");
+  modal.classList.remove("hidden");
+  modal.classList.add("flex");
+
+  document.getElementById("import-file").value = "";
+}
+
+function closeExportImportModal() {
+  const modal = document.getElementById("export-import-modal");
+  modal.classList.add("hidden");
+  modal.classList.remove("flex");
+}
+
+async function handleExportCsv() {
+  try {
+    const response = await fetch(`${API_BASE_URL}/export`, {
+      headers: getAuthHeaders(),
+    });
+
+    if (!response.ok) throw new Error("Failed to export");
+
+    const blob = await response.blob();
+    const url = window.URL.createObjectURL(blob);
+
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = "expenses.csv";
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+    window.URL.revokeObjectURL(url);
+
+    closeExportImportModal();
+  } catch (err) {
+    alert("Error exporting CSV: " + err.message);
+  }
+}
+
+async function handleImportCsv() {
+  const fileInput = document.getElementById("import-file");
+  const file = fileInput.files[0];
+
+  if (!file) {
+    alert("Please select a CSV file first");
+    return;
+  }
+
+  const formData = new FormData();
+  formData.append("file", file);
+
+  try {
+    const response = await fetch(`${API_BASE_URL}/import`, {
+      method: "POST",
+      headers: {
+        ...(authToken ? { Authorization: `Bearer ${authToken}` } : {}),
+      },
+      body: formData,
+    });
+
+    if (!response.ok) throw new Error("Import failed");
+
+    const result = await response.json();
+    alert(`Import finished!\nAdded: ${result.added}\nFailed: ${result.failed}`);
+
+    closeExportImportModal();
+    await initDashboard();
+  } catch (err) {
+    alert("Error importing CSV: " + err.message);
   }
 }
