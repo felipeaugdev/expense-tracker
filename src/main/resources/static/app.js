@@ -1440,7 +1440,7 @@ async function handleExportCsv() {
 
     closeExportImportModal();
   } catch (err) {
-    alert("Error exporting CSV: " + err.message);
+    showToast("Error exporting CSV: " + err.message, "error");
   }
 }
 
@@ -1468,11 +1468,68 @@ async function handleImportCsv() {
     if (!response.ok) throw new Error("Import failed");
 
     const result = await response.json();
-    alert(`Import finished!\nAdded: ${result.added}\nFailed: ${result.failed}`);
+    showToast(
+      `Import finished! — Added: ${result.added}, Failed: ${result.failed}`,
+      "success",
+    );
 
     closeExportImportModal();
     await initDashboard();
   } catch (err) {
-    alert("Error importing CSV: " + err.message);
+    showToast("Error importing CSV: " + err.message, "error");
   }
+}
+
+// ===================
+// Toast Notifications
+// ===================
+
+function showToast(message, type = "success") {
+  const container = document.getElementById("toast-container");
+  if (!container) return;
+
+  const toast = document.createElement("div");
+
+  const baseClasses =
+    "pointer-events-auto px-4 py-3 rounded-lg shadow-lg text-sm font-medium flex items-center gap-3 min-w-[260px] max-w-sm transform transition-all duration-300 translate-y-4 opacity-0";
+
+  const typeClasses = (type = "success"
+    ? "bg-emerald-600 text-white"
+    : type === "error"
+      ? "bg-rose-600 text-white"
+      : "bg-slate-700 text-white");
+
+  toast.className = `${baseClasses} ${typeClasses}`;
+
+  toast.innerHTML = `
+    <span class="flex-1">${message}</span>
+    <button class="text-white/80 hover:text-white text-lg leading-none" aria-label="Close">
+      &times;
+    </button>
+  `;
+
+  // Close button
+  toast.querySelector("button").addEventListener("click", () => {
+    removeToast(toast);
+  });
+
+  container.appendChild(toast);
+
+  // Animate in
+  requestAnimationFrame(() => {
+    toast.classList.remove("translate-y-4", "opacity-0");
+    toast.classList.add("translate-y-0", "opacity-100");
+  });
+
+  // Auto remove
+  setTimeout(() => {
+    removeToast(toast);
+  }, 4000);
+}
+
+function removeToast(toast) {
+  toast.classList.add("translate-y-4", "opacity-0");
+  setTimeout(() => {
+    toast.remove();
+  }, 300);
 }
