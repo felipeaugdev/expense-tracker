@@ -865,6 +865,19 @@
           <div>
             <p class="text-sm text-slate-600 dark:text-slate-400 mb-2">
               Import expenses from a CSV file.
+              <span
+                class="inline-flex items-center justify-center w-4 h-4 rounded-full bg-slate-200 dark:bg-slate-600 text-slate-500 dark:text-slate-300 text-xs cursor-help"
+                title="Expected format: Date,Description,Category,Amount
+Example:
+2025-10-15,Groceries,FOOD,45.90
+2025-10-16,Uber,TRANSPORTATION,12.50
+
+- Date must be YYYY-MM-DD
+- Amount must be a positive number
+- Unknown categories become OTHER"
+              >
+                ?
+              </span>
             </p>
             <input
               type="file"
