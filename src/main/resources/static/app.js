@@ -92,6 +92,14 @@ const TRANSLATIONS = {
     days7: "7 days",
     days14: "14 days",
     days30: "30 days",
+    exportImport: "Export / Import",
+    exportDescription: "Download all your expenses as a CSV file.",
+    exportCsv: "Export CSV",
+    importDescription: "Import expenses from a CSV file.",
+    importCsv: "Import CSV",
+    importTooltip:
+      "Expected format: Date,Description,Category,Amount\nExample:\n2025-10-15,Groceries,FOOD,45.90\n2025-10-16,Uber,TRANSPORTATION,12.50\n\n- Date must be YYYY-MM-DD\n- Amount must be a positive number\n- Unknown categories become OTHER",
+    importFinished: "Import finished — Added: {added}, Failed: {failed}",
   },
   pt: {
     title: "Controle de Despesas",
@@ -173,6 +181,15 @@ const TRANSLATIONS = {
     days7: "7 dias",
     days14: "14 dias",
     days30: "30 dias",
+    exportImport: "Exportar / Importar",
+    exportDescription: "Baixe todas as suas despesas em um arquivo CSV.",
+    exportCsv: "Exportar CSV",
+    importDescription: "Importe despesas a partir de um arquivo CSV.",
+    importCsv: "Importar CSV",
+    importTooltip:
+      "Formato esperado: Data,Descrição,Categoria,Valor\nExemplo:\n2025-10-15,Supermercado,FOOD,45.90\n2025-10-16,Uber,TRANSPORTATION,12.50\n\n- A data deve estar no formato AAAA-MM-DD\n- O valor deve ser um número positivo\n- Categorias desconhecidas viram OTHER",
+    importFinished:
+      "Importação concluída — Adicionadas: {added}, Falhas: {failed}",
   },
 };
 
@@ -446,6 +463,13 @@ function applyLanguage() {
   const newCategoryInput = document.getElementById("new-category-name");
   if (newCategoryInput) {
     newCategoryInput.placeholder = dict.categoryNamePlaceholder;
+  }
+
+  const importHelp = document.querySelector(
+    "#export-import-modal .cursor-help",
+  );
+  if (importHelp) {
+    importHelp.title = dict.importTooltip;
   }
 
   updateAmountPlaceholder();
@@ -1477,10 +1501,11 @@ async function handleImportCsv() {
     if (!response.ok) throw new Error("Import failed");
 
     const result = await response.json();
-    showToast(
-      `Import finished! — Added: ${result.added}, Failed: ${result.failed}`,
-      "success",
-    );
+    const message = TRANSLATIONS[currentLang].importFinished
+      .replace("{added}", result.added)
+      .replace("{failed}", result.failed);
+
+    showToast(message, "success");
 
     closeExportImportModal();
     await initDashboard();
@@ -1534,7 +1559,7 @@ function showToast(message, type = "success") {
   // Auto remove
   setTimeout(() => {
     removeToast(toast);
-  }, 4000);
+  }, 5000);
 }
 
 function removeToast(toast) {
