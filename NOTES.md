@@ -6,12 +6,16 @@ This expense tracker was built primarily with Java. It uses Spring Boot and JPA 
 ## Month 1 Recap
 * **Initial Concept:** This project originally started as just a simple CLI application. My purpose was to learn and demonstrate back-end logic, as well as some programming concepts like loose coupling, separation of responsibilities, etc.
 * **Overhaul:** After adding extra functionality and migrating a lot of the verbose logic to Spring Boot, I started seeing this application as more than just an exercise in back-end programming. That's when I decided to simplify the user experience by containerizing the whole thing in Docker and even adding a Web UI.
-* **Current State:** The app now handles CRUD operations through a visual interface. All the information is available at a glance, including an expense table and a category chart (using MariaDB, Chart.js, and Tailwind CSS). It features optional user accounts with JWT, custom category, monthly budgets with progress tracking, pagination, recurring expenses, dark mode, EN/PT-BR localization, and USD/BRL currency switching. Data flows from the front-end UI, through REST endpoints, down to the repository layer. 
+* **Current State:** The app now handles CRUD operations through a visual interface. All the information is available at a glance, including an expense table and a category chart (using MariaDB, Chart.js, and Tailwind CSS). It features optional user accounts with JWT, custom category, monthly budgets with progress tracking, pagination, recurring expenses, exporting/importing, dark mode, EN/PT-BR localization, and USD/BRL currency switching. Data flows from the front-end UI, through REST endpoints, down to the repository layer. 
 * **AI Usage Note:** Built with AI assistance for code implementation and boilerplate generation. But the architecture, data modeling, feature scope and debugging are directed manually.
 
 ---
 
 ## Dev Log
+
+### [November 12–13 2026] - Export / Import and Toast Notifications
+* **What changed:** Added the ability to export and import expenses in CSV format. Also added a new toast notification system that can be reused to display alerts such as successful operations, errors, information, etc.
+* **Why:** Being able to export and import expenses is good for portability and backups. All information is preserved, so you don't lose any data (nonexistent custom categories fall back to "Other"). Toast notifications replace the old browser alerts for a cleaner, more modern feedback experience.
 
 ### [November 1–7 2026] - Recurring Expenses
 * **What changed:** Added full support for recurring expenses (weekly / bi-weekly / monthly). New `RecurringExpense` entity, automatic generation via `@Scheduled` job + startup, optional "stop series" on delete, and UI controls (checkbox + frequency selector) on both Add and Edit forms. Also includes a small recurring icon in the transaction table.

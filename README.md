@@ -27,6 +27,7 @@ A full-stack personal expense tracking application with real-time analytics. Bui
 - **Recurring Expenses:** Mark an expense as recurring (every 30, 14 or 7 days). Future occurrences are generated automatically. A small icon indicates recurring items in the transaction list.
 - **Optional User Accounts:** Register / login with JWT authentication. Expenses are isolated per user while guest mode remains fully functional.
 - **Monthly Budgets:** Set per-category spending limits, track progress with visual bars, and get warned when a limit is reached (requires login).
+- **CSV Export / Import:** Download all expenses as a CSV file or import expenses from a CSV. Custom categories that don’t belong to the current user fall back to "Other".
 - **Dockerized Environment:** Multi-stage Docker build packaging both Spring Boot backend and MariaDB database via Docker Compose.
 - **Secure API:** Spring Security + JJWT protect authenticated endpoints while keeping public access for guests.
 - **API Documentation:** Interactive Swagger UI generated via SpringDoc OpenAPI.
@@ -51,6 +52,8 @@ A full-stack personal expense tracking application with real-time analytics. Bui
 | `DELETE` | `/api/expenses/{id}`     | Delete an expense by ID |
 | `GET`    | `/api/expenses/category-totals` | Get spending aggregated by category |
 | `GET`    | `/api/expenses/monthly-report` | Get month-over-month report metrics |
+| `GET`    | `/api/expenses/export`   | Download current user's expenses to a CSV file
+| `POST`   | `/api/expenses/import`   | Import expense list from CSV
 | `GET`    | `/api/categories`        | List system + user categories |
 | `POST`   | `/api/categories`        | Create a custom category (auth required) |
 | `GET`    | `/api/budgets`           | List budgets for the current user |
