@@ -21,7 +21,7 @@ jobs:
           distribution: "temurin"
           cache: maven
 
-      - name: Run Unit Tests
+      - name: Run Tests
         run: mvn test
 
       - name: Verify Docker build
