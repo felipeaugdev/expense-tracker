@@ -33,6 +33,13 @@ public class ExpenseController {
 
     private final ExpenseService expenseService;
 
+    private static final Map<String, String> SORTABLE_FIELDS = Map.of(
+            "date", "date",
+            "amount", "amount",
+            "description", "description",
+            "category", "category.name",
+            "id", "id");
+
     public ExpenseController(ExpenseService expenseService) {
         this.expenseService = expenseService;
     }
@@ -72,12 +79,13 @@ public class ExpenseController {
                 ? Sort.Direction.ASC
                 : Sort.Direction.DESC;
 
-        Pageable pageable = PageRequest.of(
-                page,
-                size,
-                Sort.by(
-                        new Sort.Order(direction, Objects.requireNonNull(sortField)),
-                        Sort.Order.desc("id")));
+        String property = SORTABLE_FIELDS.getOrDefault(sortField, "date");
+        Sort.Order primary = new Sort.Order(direction, Objects.requireNonNull(property));
+        if (property.equals("description") || property.equals("category.name")) {
+            primary = primary.ignoreCase();
+        }
+
+        Pageable pageable = PageRequest.of(page, size, Sort.by(primary, Sort.Order.desc("id")));
 
         return expenseService.getExpenses(days, getCurrentUser(), pageable)
                 .map(ExpenseResponse::from);

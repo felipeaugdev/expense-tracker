@@ -68,20 +68,15 @@ public class ExpenseService {
     }
 
     public Page<Expense> getExpenses(int days, User user, Pageable pageable) {
-        List<Expense> filtered = getExpensesByDateRange(days, user);
-        filtered = sortExpenses(filtered, pageable);
-
-        int start = (int) pageable.getOffset();
-        int end = Math.min(start + pageable.getPageSize(), filtered.size());
-
-        List<Expense> pageContent = start >= filtered.size()
-                ? List.of()
-                : filtered.subList(start, end);
-
-        return new org.springframework.data.domain.PageImpl<>(
-                Objects.requireNonNull(pageContent),
-                pageable,
-                filtered.size());
+        if (days > 0) {
+            LocalDate from = LocalDate.now().minusDays(days);
+            return user == null
+                    ? repository.findByUserIsNullAndDateGreaterThanEqual(from, pageable)
+                    : repository.findByUserIdAndDateGreaterThanEqual(user.getId(), from, pageable);
+        }
+        return user == null
+                ? repository.findByUserIsNull(pageable)
+                : repository.findByUserId(user.getId(), pageable);
     }
 
     public Expense updateExpense(int id, ExpenseUpdateRequest request, User currentUser) {
@@ -332,32 +327,5 @@ public class ExpenseService {
             return expense.getUser() == null;
         }
         return expense.getUser() != null && expense.getUser().getId().equals(user.getId());
-    }
-
-    private List<Expense> sortExpenses(List<Expense> expenses, Pageable pageable) {
-        if (!pageable.getSort().isSorted()) {
-            return expenses;
-        }
-
-        return expenses.stream()
-                .sorted((e1, e2) -> {
-                    for (var order : pageable.getSort()) {
-                        int comparison = switch (order.getProperty()) {
-                            case "date" -> e1.getDate().compareTo(e2.getDate());
-                            case "amount" -> e1.getAmount().compareTo(e2.getAmount());
-                            case "description" -> e1.getDescription().compareToIgnoreCase(e2.getDescription());
-                            case "category" ->
-                                e1.getCategory().getName().compareToIgnoreCase(e2.getCategory().getName());
-                            case "id" -> e1.getId().compareTo(e2.getId());
-                            default -> 0;
-                        };
-
-                        if (comparison != 0) {
-                            return order.isAscending() ? comparison : -comparison;
-                        }
-                    }
-                    return 0;
-                })
-                .toList();
     }
 }
