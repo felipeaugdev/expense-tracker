@@ -34,6 +34,20 @@ public class ExpenseService {
         this.recurringExpenseService = recurringExpenseService;
     }
 
+    private static final LocalDate EARLIEST = LocalDate.of(1900, 1, 1);
+    private static final LocalDate LATEST = LocalDate.of(9999, 12, 31);
+
+    private LocalDate startDate(int days) {
+        return days > 0 ? LocalDate.now().minusDays(days) : EARLIEST;
+    }
+
+    private BigDecimal sumBetween(User user, LocalDate from, LocalDate to) {
+        BigDecimal sum = (user == null)
+                ? repository.sumForGuests(from, to)
+                : repository.sumForUser(user.getId(), from, to);
+        return sum != null ? sum : BigDecimal.ZERO;
+    }
+
     public Expense addExpense(BigDecimal amount, String description, String categoryName,
             User user, boolean recurring, Integer frequencyDays, LocalDate date) {
 
@@ -156,13 +170,14 @@ public class ExpenseService {
      * @return Map where the key is the category name and the value is the total amount.
      */
     public Map<String, BigDecimal> getTotalExpensesByCategory(int days, User user) {
-        List<Expense> filtered = getExpensesByDateRange(days, user);
-        Map<String, BigDecimal> categoryTotals = new TreeMap<>();
+        LocalDate from = startDate(days);
+        List<CategoryTotal> rows = (user == null)
+                ? repository.sumByCategoryForGuests(from, LATEST)
+                : repository.sumByCategoryForUser(user.getId(), from, LATEST);
 
-        for (Expense expense : filtered) {
-            String categoryName = expense.getCategory().getName();
-            BigDecimal amount = expense.getAmount();
-            categoryTotals.merge(categoryName, amount, (a, b) -> a.add(b));
+        Map<String, BigDecimal> categoryTotals = new TreeMap<>();
+        for (CategoryTotal row : rows) {
+            categoryTotals.put(row.getName(), row.getTotal());
         }
         return categoryTotals;
     }
@@ -174,9 +189,7 @@ public class ExpenseService {
      * @return BigDecimal total of all expenses within the time range.
      */
     public BigDecimal getTotalExpenses(int days, User user) {
-        return getExpensesByDateRange(days, user).stream()
-                .map(e -> e.getAmount())
-                .reduce(BigDecimal.ZERO, (a, b) -> a.add(b));
+        return sumBetween(user, startDate(days), LATEST);
     }
 
     /**
@@ -202,10 +215,7 @@ public class ExpenseService {
      * Calculates total expenses for a specific calendar month.
      */
     public BigDecimal getTotalExpensesForMonth(YearMonth yearMonth, User user) {
-        return getAllExpenses(user).stream()
-                .filter(e -> YearMonth.from(e.getDate()).equals(yearMonth))
-                .map(e -> e.getAmount())
-                .reduce(BigDecimal.ZERO, (a, b) -> a.add(b));
+        return sumBetween(user, yearMonth.atDay(1), yearMonth.atEndOfMonth());
     }
 
     /**

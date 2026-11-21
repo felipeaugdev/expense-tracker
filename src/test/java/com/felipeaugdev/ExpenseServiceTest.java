@@ -6,7 +6,6 @@ import static org.mockito.Mockito.*;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
@@ -48,13 +47,18 @@ public class ExpenseServiceTest {
 
     @Test
     void testCalculateTotalExpenses() {
-        Expense e1 = new Expense(new BigDecimal("10.00"), LocalDate.now(), "Lunch", food);
-        Expense e2 = new Expense(new BigDecimal("20.00"), LocalDate.now(), "Bus Pass", transportation);
-        when(repository.findAll()).thenReturn(List.of(e1, e2));
+        when(repository.sumForGuests(any(), any())).thenReturn(new BigDecimal("30.00"));
 
         BigDecimal total = service.getTotalExpenses(0, null);
 
         assertEquals(new BigDecimal("30.00"), total);
+    }
+
+    @Test
+    void testTotalIsZeroWhenThereAreNoExpenses() {
+        when(repository.sumForGuests(any(), any())).thenReturn(null);
+
+        assertEquals(BigDecimal.ZERO, service.getTotalExpenses(0, null));
     }
 
     @Test
@@ -80,7 +84,7 @@ public class ExpenseServiceTest {
 
     @Test
     void testMonthOverMonthReportWithZeroPreviousMonth() {
-        when(repository.findAll()).thenReturn(new ArrayList<>());
+        when(repository.sumForGuests(any(), any())).thenReturn(null);
 
         MonthOverMonthReport report = service.getMonthOverMonthReport(null);
 
@@ -90,7 +94,7 @@ public class ExpenseServiceTest {
 
     @Test
     void testCategoryAggregationForEmptyExpenses() {
-        when(repository.findAll()).thenReturn(new ArrayList<>());
+        when(repository.sumByCategoryForGuests(any(), any())).thenReturn(List.of());
 
         var categoryTotals = service.getTotalExpensesByCategory(0, null);
 
