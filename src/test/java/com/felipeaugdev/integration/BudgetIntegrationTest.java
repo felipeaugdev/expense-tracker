@@ -5,11 +5,14 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
+import java.time.LocalDate;
 import java.util.Map;
 
 import org.junit.jupiter.api.Test;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.ResultActions;
+
+import com.fasterxml.jackson.databind.JsonNode;
 
 class BudgetIntegrationTest extends AbstractIntegrationTest {
 
@@ -88,5 +91,18 @@ class BudgetIntegrationTest extends AbstractIntegrationTest {
         getBudgets(bob)
                 .andExpect(jsonPath("$[0].limit").value(80.0))
                 .andExpect(jsonPath("$[0].percentage").value(0.0));
+    }
+
+    @Test
+    void budgetOnlyCountsItsOwnCategoryAndTheCurrentMonth() throws Exception {
+        String alice = registerAndLogin("alice");
+        setBudget(alice, "FOOD", 100.00).andExpect(status().isCreated());
+
+        JsonNode lastMonth = createExpense(alice, "Last month", "FOOD", 40.00);
+        moveExpenseToDate(alice, lastMonth, LocalDate.now().minusMonths(1));
+        createExpense(alice, "Taxi", "TRANSPORTATION", 30.00);
+        createExpense(alice, "This month", "FOOD", 25.00);
+
+        getBudgets(alice).andExpect(jsonPath("$[0].spent").value(25.0));
     }
 }
