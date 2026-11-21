@@ -27,6 +27,12 @@ public interface ExpenseRepository extends JpaRepository<Expense, Integer> {
     @EntityGraph(attributePaths = { "category", "recurringExpense" })
     Page<Expense> findByUserIsNullAndDateGreaterThanEqual(LocalDate from, Pageable pageable);
 
+    @EntityGraph(attributePaths = { "category", "recurringExpense" })
+    List<Expense> findByUserIdOrderByIdAsc(Long userId);
+
+    @EntityGraph(attributePaths = { "category", "recurringExpense" })
+    List<Expense> findByUserIsNullOrderByIdAsc();
+
     @Query("""
             SELECT e.category.name AS name, SUM(e.amount) AS total
             FROM Expense e
@@ -65,4 +71,5 @@ public interface ExpenseRepository extends JpaRepository<Expense, Integer> {
     BigDecimal sumForUserAndCategory(@Param("userId") Long userId,
             @Param("categoryId") Long categoryId,
             @Param("from") LocalDate from, @Param("to") LocalDate to);
+
 }

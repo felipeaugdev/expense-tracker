@@ -29,7 +29,6 @@ public class ExpenseServiceTest {
     private CategoryRepository categoryRepository;
 
     private final Category food = new Category("FOOD");
-    private final Category transportation = new Category("TRANSPORTATION");
 
     @Test
     void testAddExpenseSavesAndReturnsExpense() {
@@ -99,16 +98,5 @@ public class ExpenseServiceTest {
         var categoryTotals = service.getTotalExpensesByCategory(0, null);
 
         assertTrue(categoryTotals.isEmpty());
-    }
-
-    @Test
-    void testDateRangeFilteringAllTime() {
-        Expense e1 = new Expense(new BigDecimal("25.00"), LocalDate.now(), "Uber", transportation);
-        Expense e2 = new Expense(new BigDecimal("12.00"), LocalDate.now(), "Lunch", food);
-        when(repository.findAll()).thenReturn(List.of(e1, e2));
-
-        List<Expense> result = service.getExpensesByDateRange(0, null);
-
-        assertEquals(2, result.size());
     }
 }

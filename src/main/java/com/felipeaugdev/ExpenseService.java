@@ -9,7 +9,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.TreeMap;
-import java.util.stream.Collectors;
 
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -74,11 +73,6 @@ public class ExpenseService {
         }
 
         return saved;
-    }
-
-    public List<Expense> getAllExpenses(User user) {
-        List<Expense> all = repository.findAll();
-        return filterByUser(all, user);
     }
 
     public Page<Expense> getExpenses(int days, User user, Pageable pageable) {
@@ -193,25 +187,6 @@ public class ExpenseService {
     }
 
     /**
-     * Retrieves expenses filtered by date range.
-     * 
-     * @param days Number of days back to filter (7, 14, 30). Pass 0 for All Time.
-     * @return List of matching Expense objects.
-     */
-    public List<Expense> getExpensesByDateRange(int days, User user) {
-        List<Expense> all = getAllExpenses(user);
-
-        if (days <= 0) {
-            return all;
-        }
-
-        LocalDate cutoffDate = LocalDate.now().minusDays(days);
-        return all.stream()
-                .filter(e -> !e.getDate().isBefore(cutoffDate))
-                .collect(Collectors.toList());
-    }
-
-    /**
      * Calculates total expenses for a specific calendar month.
      */
     public BigDecimal getTotalExpensesForMonth(YearMonth yearMonth, User user) {
@@ -244,7 +219,9 @@ public class ExpenseService {
     }
 
     public List<Expense> getExpensesForExport(User user) {
-        return getAllExpenses(user);
+        return user == null
+                ? repository.findByUserIsNullOrderByIdAsc()
+                : repository.findByUserIdOrderByIdAsc(user.getId());
     }
 
     public ImportResult importFromCsv(String csvContent, User user) {
@@ -319,17 +296,6 @@ public class ExpenseService {
         }
         result.add(current.toString());
         return result.toArray(new String[0]);
-    }
-
-    private List<Expense> filterByUser(List<Expense> expenses, User user) {
-        if (user == null) {
-            return expenses.stream()
-                    .filter(e -> e.getUser() == null)
-                    .collect(Collectors.toList());
-        }
-        return expenses.stream()
-                .filter(e -> e.getUser() != null && e.getUser().getId().equals(user.getId()))
-                .collect(Collectors.toList());
     }
 
     private boolean belongsToUser(Expense expense, User user) {
