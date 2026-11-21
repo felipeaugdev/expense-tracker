@@ -56,4 +56,13 @@ public interface ExpenseRepository extends JpaRepository<Expense, Integer> {
             WHERE e.user IS NULL AND e.date BETWEEN :from AND :to
             """)
     BigDecimal sumForGuests(@Param("from") LocalDate from, @Param("to") LocalDate to);
+
+    @Query("""
+            SELECT SUM(e.amount) FROM Expense e
+            WHERE e.user.id = :userId AND e.category.id = :categoryId
+              AND e.date BETWEEN :from AND :to
+            """)
+    BigDecimal sumForUserAndCategory(@Param("userId") Long userId,
+            @Param("categoryId") Long categoryId,
+            @Param("from") LocalDate from, @Param("to") LocalDate to);
 }

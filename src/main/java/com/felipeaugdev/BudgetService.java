@@ -2,7 +2,6 @@ package com.felipeaugdev;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
-import java.time.LocalDate;
 import java.time.YearMonth;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -38,15 +37,9 @@ public class BudgetService {
     }
 
     private BigDecimal calculateSpent(User user, Category category, YearMonth month) {
-        LocalDate start = month.atDay(1);
-        LocalDate end = month.atEndOfMonth();
-
-        return expenseRepository.findAll().stream()
-                .filter(e -> e.getUser() != null && e.getUser().getId().equals(user.getId()))
-                .filter(e -> e.getCategory() != null && e.getCategory().getId().equals(category.getId()))
-                .filter(e -> !e.getDate().isBefore(start) && !e.getDate().isAfter(end))
-                .map(e -> e.getAmount())
-                .reduce(BigDecimal.ZERO, (a, b) -> a.add(b));
+        BigDecimal spent = expenseRepository.sumForUserAndCategory(
+                user.getId(), category.getId(), month.atDay(1), month.atEndOfMonth());
+        return spent != null ? spent : BigDecimal.ZERO;
     }
 
     public BudgetResponse createOrUpdateBudget(User user, String categoryName, BigDecimal amount) {

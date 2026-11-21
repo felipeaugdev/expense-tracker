@@ -32,70 +32,70 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @SuppressWarnings("null")
 class ExpenseControllerTest {
 
-        @Autowired
-        private MockMvc mockMvc;
+    @Autowired
+    private MockMvc mockMvc;
 
-        @Autowired
-        private ObjectMapper objectMapper;
+    @Autowired
+    private ObjectMapper objectMapper;
 
-        @MockBean
-        private ExpenseService expenseService;
+    @MockBean
+    private ExpenseService expenseService;
 
-        @MockBean
-        private JwtUtils jwtUtils;
+    @MockBean
+    private JwtUtils jwtUtils;
 
-        @MockBean
-        private UserDetailsService userDetailsService;
+    @MockBean
+    private UserDetailsService userDetailsService;
 
-        private final Category food = new Category("FOOD");
+    private final Category food = new Category("FOOD");
 
-        @Test
-        void testGetExpensesReturnsJsonList() throws Exception {
-                Expense expense = new Expense(new BigDecimal("15.00"), LocalDate.now(), "Coffee", food);
+    @Test
+    void testGetExpensesReturnsJsonList() throws Exception {
+        Expense expense = new Expense(new BigDecimal("15.00"), LocalDate.now(), "Coffee", food);
 
-                Page<Expense> page = new PageImpl<>(List.of(expense));
+        Page<Expense> page = new PageImpl<>(List.of(expense));
 
-                when(expenseService.getExpenses(eq(0), any(), any(Pageable.class)))
-                                .thenReturn(page);
+        when(expenseService.getExpenses(eq(0), any(), any(Pageable.class)))
+                .thenReturn(page);
 
-                mockMvc.perform(get("/api/expenses"))
-                                .andExpect(status().isOk())
-                                .andExpect(jsonPath("$.content[0].description").value("Coffee"))
-                                .andExpect(jsonPath("$.content[0].amount").value(15.00));
-        }
+        mockMvc.perform(get("/api/expenses"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.content[0].description").value("Coffee"))
+                .andExpect(jsonPath("$.content[0].amount").value(15.00));
+    }
 
-        @Test
-        void testAddExpenseReturnsCreatedStatus() throws Exception {
-                Expense expense = new Expense(new BigDecimal("25.50"), LocalDate.now(), "Dinner", food);
-                when(expenseService.addExpense(any(BigDecimal.class), eq("Dinner"),
-                                eq("FOOD"), any(), anyBoolean(), any(), any()))
-                                .thenReturn(expense);
+    @Test
+    void testAddExpenseReturnsCreatedStatus() throws Exception {
+        Expense expense = new Expense(new BigDecimal("25.50"), LocalDate.now(), "Dinner", food);
+        when(expenseService.addExpense(any(BigDecimal.class), eq("Dinner"),
+                eq("FOOD"), any(), anyBoolean(), any(), any()))
+                .thenReturn(expense);
 
-                ExpenseCreateRequest request = new ExpenseCreateRequest();
-                request.setAmount(new BigDecimal("25.50"));
-                request.setDescription("Dinner");
-                request.setCategory("FOOD");
+        ExpenseCreateRequest request = new ExpenseCreateRequest();
+        request.setAmount(new BigDecimal("25.50"));
+        request.setDescription("Dinner");
+        request.setCategory("FOOD");
 
-                mockMvc.perform(post("/api/expenses")
-                                .contentType(MediaType.APPLICATION_JSON)
-                                .content(objectMapper.writeValueAsString(request)))
-                                .andExpect(status().isCreated())
-                                .andExpect(jsonPath("$.description").value("Dinner"));
-        }
+        mockMvc.perform(post("/api/expenses")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(request)))
+                .andExpect(status().isCreated())
+                .andExpect(jsonPath("$.description").value("Dinner"));
+    }
 
-        @Test
-        void testDeleteExpenseExistingReturnsNoContent() throws Exception {
-                when(expenseService.deleteExpense(eq(1), any(), anyBoolean())).thenReturn(true);
+    @Test
+    void testDeleteExpenseExistingReturnsNoContent() throws Exception {
+        when(expenseService.deleteExpense(eq(1), any(), anyBoolean())).thenReturn(true);
 
-                mockMvc.perform(delete("/api/expenses/1"))
-                                .andExpect(status().isNoContent());
-        }
+        mockMvc.perform(delete("/api/expenses/1"))
+                .andExpect(status().isNoContent());
+    }
 
-        @Test
-        void testDeleteExpenseNotFoundReturns404() throws Exception {
-                when(expenseService.deleteExpense(eq(999), any(), anyBoolean())).thenReturn(false);
+    @Test
+    void testDeleteExpenseNotFoundReturns404() throws Exception {
+        when(expenseService.deleteExpense(eq(999), any(), anyBoolean())).thenReturn(false);
 
-                mockMvc.perform(delete("/api/expenses/999"))
-                                .andExpect(status().isNotFound());
-        }
+        mockMvc.perform(delete("/api/expenses/999"))
+                .andExpect(status().isNotFound());
+    }
 }

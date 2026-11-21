@@ -5,7 +5,6 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 
 import java.math.BigDecimal;
-import java.time.LocalDate;
 import java.util.List;
 import java.util.Optional;
 
@@ -66,12 +65,9 @@ public class BudgetServiceTest {
         Budget budget = new Budget(user, category, limit);
         budget.setId(100L);
 
-        Category transport = createCategory(20L, "TRANSPORTATION");
-        Expense targetExpense = new Expense(spent, LocalDate.now(), "Groceries", category, user);
-        Expense otherCategoryExpense = new Expense(new BigDecimal("20.00"), LocalDate.now(), "Bus", transport, user);
-
         when(budgetRepository.findByUserId(user.getId())).thenReturn(List.of(budget));
-        when(expenseRepository.findAll()).thenReturn(List.of(targetExpense, otherCategoryExpense));
+        when(expenseRepository.sumForUserAndCategory(eq(user.getId()), eq(category.getId()), any(), any()))
+                .thenReturn(spent);
 
         List<BudgetResponse> result = budgetService.getBudgetsForUser(user);
 
@@ -112,7 +108,7 @@ public class BudgetServiceTest {
         when(categoryRepository.findVisibleByName(category.getName(), user)).thenReturn(Optional.of(category));
         when(budgetRepository.findByUserIdAndCategoryId(user.getId(), category.getId())).thenReturn(Optional.empty());
         when(budgetRepository.save(any(Budget.class))).thenReturn(savedBudget);
-        when(expenseRepository.findAll()).thenReturn(List.of());
+        when(expenseRepository.sumForUserAndCategory(any(), any(), any(), any())).thenReturn(null);
 
         BudgetResponse response = budgetService.createOrUpdateBudget(user, category.getName(), amount);
 
@@ -136,7 +132,7 @@ public class BudgetServiceTest {
         when(budgetRepository.findByUserIdAndCategoryId(user.getId(), category.getId()))
                 .thenReturn(Optional.of(existingBudget));
         when(budgetRepository.save(existingBudget)).thenReturn(existingBudget);
-        when(expenseRepository.findAll()).thenReturn(List.of());
+        when(expenseRepository.sumForUserAndCategory(any(), any(), any(), any())).thenReturn(null);
 
         BudgetResponse response = budgetService.createOrUpdateBudget(user, category.getName(), newAmount);
 
