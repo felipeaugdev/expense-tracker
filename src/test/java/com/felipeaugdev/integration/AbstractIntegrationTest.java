@@ -2,8 +2,10 @@ package com.felipeaugdev.integration;
 
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
+import java.time.LocalDate;
 import java.util.Map;
 import java.util.UUID;
 
@@ -87,5 +89,20 @@ public abstract class AbstractIntegrationTest {
             request.header("Authorization", "Bearer " + token);
         }
         return mockMvc.perform(request);
+    }
+
+    /** Changes an existing expense's date by updating it through the API. */
+    protected void moveExpenseToDate(String token, JsonNode expense, LocalDate date) throws Exception {
+        Map<String, Object> update = Map.of(
+                "amount", expense.get("amount").decimalValue(),
+                "date", date.toString(),
+                "description", expense.get("description").asText(),
+                "category", expense.get("category").asText());
+
+        mockMvc.perform(put("/api/expenses/" + expense.get("id").asInt())
+                .header("Authorization", "Bearer " + token)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(update)))
+                .andExpect(status().isOk());
     }
 }
