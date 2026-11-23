@@ -24,6 +24,7 @@ import com.felipeaugdev.dto.ExpenseCreateRequest;
 import com.felipeaugdev.dto.ExpenseResponse;
 import com.felipeaugdev.dto.ExpenseUpdateRequest;
 import com.felipeaugdev.dto.ImportResult;
+import com.felipeaugdev.exception.BadRequestException;
 
 import jakarta.validation.Valid;
 
@@ -164,7 +165,7 @@ public class ExpenseController {
     @PostMapping(value = "/import", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ImportResult importExpenses(@RequestParam("file") MultipartFile file) throws IOException {
         if (file.isEmpty()) {
-            throw new RuntimeException("File is empty");
+            throw new BadRequestException("File is empty");
         }
 
         String content = new String(file.getBytes(), StandardCharsets.UTF_8);

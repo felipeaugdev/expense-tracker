@@ -16,6 +16,8 @@ import org.springframework.stereotype.Service;
 
 import com.felipeaugdev.dto.ExpenseUpdateRequest;
 import com.felipeaugdev.dto.ImportResult;
+import com.felipeaugdev.exception.BadRequestException;
+import com.felipeaugdev.exception.ResourceNotFoundException;
 
 @Service
 public class ExpenseService {
@@ -51,7 +53,7 @@ public class ExpenseService {
             User user, boolean recurring, Integer frequencyDays, LocalDate date) {
 
         Category category = categoryRepository.findVisibleByName(categoryName, user)
-                .orElseThrow(() -> new RuntimeException("Category not found: " + categoryName));
+                .orElseThrow(() -> new BadRequestException("Category not found: " + categoryName));
 
         LocalDate expenseDate = (date != null) ? date : LocalDate.now();
 
@@ -90,7 +92,7 @@ public class ExpenseService {
     public Expense updateExpense(int id, ExpenseUpdateRequest request, User currentUser) {
         Expense expense = repository.findById(id)
                 .filter(e -> belongsToUser(e, currentUser))
-                .orElseThrow(() -> new RuntimeException("Expense not found or access denied"));
+                .orElseThrow(() -> new ResourceNotFoundException("Expense not found"));
 
         if (request.getAmount() != null) {
             expense.setAmount(request.getAmount());
@@ -103,7 +105,7 @@ public class ExpenseService {
         }
         if (request.getCategory() != null) {
             Category category = categoryRepository.findVisibleByName(request.getCategory(), currentUser)
-                    .orElseThrow(() -> new RuntimeException("Category not found: " + request.getCategory()));
+                    .orElseThrow(() -> new BadRequestException("Category not found: " + request.getCategory()));
 
             expense.setCategory(category);
         }

@@ -16,6 +16,9 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import com.felipeaugdev.dto.BudgetResponse;
+import com.felipeaugdev.exception.BadRequestException;
+import com.felipeaugdev.exception.ResourceNotFoundException;
+import com.felipeaugdev.exception.UnauthorizedException;
 
 @ExtendWith(MockitoExtension.class)
 @SuppressWarnings("null")
@@ -83,7 +86,7 @@ public class BudgetServiceTest {
 
     @Test
     void testCreateOrUpdateBudgetThrowsWhenUserIsNull() {
-        RuntimeException exception = assertThrows(RuntimeException.class,
+        UnauthorizedException exception = assertThrows(UnauthorizedException.class,
                 () -> budgetService.createOrUpdateBudget(null, "FOOD", new BigDecimal("100.00")));
 
         assertEquals("You must be logged in to set a budget", exception.getMessage());
@@ -93,7 +96,7 @@ public class BudgetServiceTest {
     void testCreateOrUpdateBudgetThrowsWhenCategoryNotFound() {
         when(categoryRepository.findVisibleByName("UNKNOWN", user)).thenReturn(Optional.empty());
 
-        RuntimeException exception = assertThrows(RuntimeException.class,
+        BadRequestException exception = assertThrows(BadRequestException.class,
                 () -> budgetService.createOrUpdateBudget(user, "UNKNOWN", new BigDecimal("100.00")));
 
         assertTrue(exception.getMessage().contains("Category not found"));
@@ -158,7 +161,7 @@ public class BudgetServiceTest {
         Long nonExistentId = 999L;
         when(budgetRepository.findById(nonExistentId)).thenReturn(Optional.empty());
 
-        RuntimeException exception = assertThrows(RuntimeException.class,
+        ResourceNotFoundException exception = assertThrows(ResourceNotFoundException.class,
                 () -> budgetService.deleteBudget(user, nonExistentId));
 
         assertEquals("Budget not found", exception.getMessage());
@@ -166,17 +169,24 @@ public class BudgetServiceTest {
     }
 
     @Test
-    void testDeleteBudgetThrowsWhenAccessDenied() {
+    void testDeleteBudgetHidesBudgetsOfOtherUsers() {
         User otherUser = new User(2L, "jane", "password", "USER");
         Budget budget = new Budget(otherUser, category, new BigDecimal("100.00"));
         budget.setId(300L);
 
         when(budgetRepository.findById(budget.getId())).thenReturn(Optional.of(budget));
 
-        RuntimeException exception = assertThrows(RuntimeException.class,
+        ResourceNotFoundException exception = assertThrows(ResourceNotFoundException.class,
                 () -> budgetService.deleteBudget(user, budget.getId()));
 
-        assertEquals("Access denied", exception.getMessage());
+        assertEquals("Budget not found", exception.getMessage());
         verify(budgetRepository, never()).delete(any());
+    }
+
+    @Test
+    void testDeleteBudgetThrowsWhenUserIsNull() {
+        assertThrows(UnauthorizedException.class, () -> budgetService.deleteBudget(null, 1L));
+
+        verifyNoInteractions(budgetRepository);
     }
 }

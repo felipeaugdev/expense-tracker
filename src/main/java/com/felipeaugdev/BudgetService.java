@@ -9,6 +9,9 @@ import java.util.stream.Collectors;
 import org.springframework.stereotype.Service;
 
 import com.felipeaugdev.dto.BudgetResponse;
+import com.felipeaugdev.exception.BadRequestException;
+import com.felipeaugdev.exception.ResourceNotFoundException;
+import com.felipeaugdev.exception.UnauthorizedException;
 
 @Service
 public class BudgetService {
@@ -44,11 +47,11 @@ public class BudgetService {
 
     public BudgetResponse createOrUpdateBudget(User user, String categoryName, BigDecimal amount) {
         if (user == null) {
-            throw new RuntimeException("You must be logged in to set a budget");
+            throw new UnauthorizedException("You must be logged in to set a budget");
         }
 
         Category category = categoryRepository.findVisibleByName(categoryName, user)
-                .orElseThrow(() -> new RuntimeException("Category not found: " + categoryName));
+                .orElseThrow(() -> new BadRequestException("Category not found: " + categoryName));
 
         Budget budget = budgetRepository
                 .findByUserIdAndCategoryId(user.getId(), category.getId())
@@ -62,11 +65,15 @@ public class BudgetService {
 
     @SuppressWarnings("null")
     public void deleteBudget(User user, Long budgetId) {
+        if (user == null) {
+            throw new UnauthorizedException("You must be logged in to delete a budget");
+        }
+
         Budget budget = budgetRepository.findById(budgetId)
-                .orElseThrow(() -> new RuntimeException("Budget not found"));
+                .orElseThrow(() -> new ResourceNotFoundException("Budget not found"));
 
         if (!budget.getUser().getId().equals(user.getId())) {
-            throw new RuntimeException("Access denied");
+            throw new ResourceNotFoundException("Budget not found");
         }
 
         budgetRepository.delete(budget);
