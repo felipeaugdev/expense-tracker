@@ -1,11 +1,41 @@
 package com.felipeaugdev.integration;
 
+import static org.hamcrest.Matchers.hasItem;
+import static org.hamcrest.Matchers.not;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 import org.junit.jupiter.api.Test;
+import org.springframework.test.web.servlet.ResultActions;
 
 class CategoryIntegrationTest extends AbstractIntegrationTest {
+
+    private ResultActions listCategories(String token) throws Exception {
+        var request = get("/api/categories");
+        if (token != null) {
+            request.header("Authorization", "Bearer " + token);
+        }
+        return mockMvc.perform(request);
+    }
+
+    @Test
+    @SuppressWarnings("null")
+    void customCategoriesAreOnlyListedForTheirOwner() throws Exception {
+        String alice = registerAndLogin("alice");
+        String bob = registerAndLogin("bob");
+        createCategory(alice, "Gym").andExpect(status().isCreated());
+
+        listCategories(alice)
+                .andExpect(jsonPath("[*].name", hasItem("GYM")))
+                .andExpect(jsonPath("[*].name", hasItem("FOOD")));
+        listCategories(bob)
+                .andExpect(jsonPath("[*].name", not(hasItem("GYM"))))
+                .andExpect(jsonPath("[*].name", hasItem("FOOD")));
+        listCategories(null)
+                .andExpect(jsonPath("[*].name", not(hasItem("GYM"))))
+                .andExpect(jsonPath("[*].name", hasItem("FOOD")));
+    }
 
     @Test
     void twoUsersCanCreateCategoriesWithTheSameName() throws Exception {
