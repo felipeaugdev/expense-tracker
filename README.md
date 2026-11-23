@@ -2,7 +2,7 @@
 ![CI Status](https://github.com/felipeaugdev/expense-tracker/actions/workflows/ci.yml/badge.svg)
 
 **Live Demo:** [https://expense-tracker-4d81.onrender.com](https://expense-tracker-4d81.onrender.com)  
-*(May take 30–60 seconds to wake up on first visit)*
+*(May take 30–60 seconds to wake up on first visit. For the best performance, run the program locally instead.)*
 
 A full-stack personal expense tracking application with real-time analytics. Built with Java 21, Spring Boot, MariaDB, Docker, and a modern Vanilla JS/Tailwind CSS dashboard.
 
