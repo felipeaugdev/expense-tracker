@@ -58,8 +58,8 @@ class ExpenseSummaryIntegrationTest extends AbstractIntegrationTest {
     void categoryTotalsRespectTheDaysFilter() throws Exception {
         String alice = registerAndLogin("alice");
         createExpense(alice, "Recent", "FOOD", 10.00);
-        JsonNode old = createExpense(alice, "Old", "FOOD", 20.00);
-        moveExpenseToDate(alice, old, LocalDate.now().minusDays(60));
+        JsonNode oldExpense = createExpense(alice, "Old", "FOOD", 20.00);
+        moveExpenseToDate(alice, oldExpense, LocalDate.now().minusDays(60));
 
         getCategoryTotals(alice, "days=30").andExpect(jsonPath("$.FOOD").value(10.0));
         getCategoryTotals(alice, "days=0").andExpect(jsonPath("$.FOOD").value(30.0));

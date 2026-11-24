@@ -71,7 +71,6 @@ class ExpenseListingIntegrationTest extends AbstractIntegrationTest {
         String alice = registerAndLogin("alice");
         createExpense(alice, "Recent", "FOOD", 5.00);
         JsonNode oldExpense = createExpense(alice, "Old", "FOOD", 5.00);
-
         moveExpenseToDate(alice, oldExpense, LocalDate.now().minusDays(60));
 
         getExpenses(alice, "days=30")
