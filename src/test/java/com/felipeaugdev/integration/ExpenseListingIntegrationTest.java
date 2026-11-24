@@ -1,14 +1,13 @@
 package com.felipeaugdev.integration;
 
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 import java.time.LocalDate;
-import java.util.Map;
 
 import org.junit.jupiter.api.Test;
-import org.springframework.http.MediaType;
+
+import com.fasterxml.jackson.databind.JsonNode;
 
 class ExpenseListingIntegrationTest extends AbstractIntegrationTest {
 
@@ -68,22 +67,12 @@ class ExpenseListingIntegrationTest extends AbstractIntegrationTest {
     }
 
     @Test
-    @SuppressWarnings("null")
     void daysFilterExcludesOlderExpenses() throws Exception {
         String alice = registerAndLogin("alice");
         createExpense(alice, "Recent", "FOOD", 5.00);
-        int oldId = createExpense(alice, "Old", "FOOD", 5.00).get("id").asInt();
+        JsonNode oldExpense = createExpense(alice, "Old", "FOOD", 5.00);
 
-        Map<String, Object> update = Map.of(
-                "amount", 5.00,
-                "date", LocalDate.now().minusDays(60).toString(),
-                "description", "Old",
-                "category", "FOOD");
-        mockMvc.perform(put("/api/expenses/" + oldId)
-                .header("Authorization", "Bearer " + alice)
-                .contentType(MediaType.APPLICATION_JSON)
-                .content(objectMapper.writeValueAsString(update)))
-                .andExpect(status().isOk());
+        moveExpenseToDate(alice, oldExpense, LocalDate.now().minusDays(60));
 
         getExpenses(alice, "days=30")
                 .andExpect(jsonPath("$.totalElements").value(1))
