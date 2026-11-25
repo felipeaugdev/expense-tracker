@@ -23,3 +23,4 @@ thumbs.db
 # For local development
 .env
 docker-compose.override.yml
+*.session.sql
