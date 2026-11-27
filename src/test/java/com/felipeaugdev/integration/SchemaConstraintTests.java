@@ -8,7 +8,7 @@ import org.junit.jupiter.api.Test;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.jdbc.core.JdbcTemplate;
 
-interface SchemaConstraintTest {
+interface SchemaConstraintTests {
 
     JdbcTemplate jdbc();
 
